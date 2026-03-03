@@ -1,0 +1,61 @@
+{
+  "status": "done",
+  "assets": {
+    "frontend-122e44e40a5cd88d71a3.js": {
+      "name": "frontend-122e44e40a5cd88d71a3.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-122e44e40a5cd88d71a3.js",
+      "publicPath": "static/frontend/frontend-122e44e40a5cd88d71a3.js"
+    },
+    "frontend-5c826848581fde80653e.js": {
+      "name": "frontend-5c826848581fde80653e.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-5c826848581fde80653e.js",
+      "publicPath": "static/frontend/frontend-5c826848581fde80653e.js"
+    },
+    "frontend-60c509d6fbfb364a52d0.js": {
+      "name": "frontend-60c509d6fbfb364a52d0.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-60c509d6fbfb364a52d0.js",
+      "publicPath": "static/frontend/frontend-60c509d6fbfb364a52d0.js"
+    },
+    "frontend-812d13f01f831d9f445d.js": {
+      "name": "frontend-812d13f01f831d9f445d.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-812d13f01f831d9f445d.js",
+      "publicPath": "static/frontend/frontend-812d13f01f831d9f445d.js"
+    },
+    "frontend-869a9bc7e8e53fc898f1.js": {
+      "name": "frontend-869a9bc7e8e53fc898f1.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-869a9bc7e8e53fc898f1.js",
+      "publicPath": "static/frontend/frontend-869a9bc7e8e53fc898f1.js"
+    },
+    "frontend-8b0224dc25d66e3d6817.js": {
+      "name": "frontend-8b0224dc25d66e3d6817.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-8b0224dc25d66e3d6817.js",
+      "publicPath": "static/frontend/frontend-8b0224dc25d66e3d6817.js"
+    },
+    "frontend-8cb6b1dd6e1ce826e69c.js": {
+      "name": "frontend-8cb6b1dd6e1ce826e69c.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-8cb6b1dd6e1ce826e69c.js",
+      "publicPath": "static/frontend/frontend-8cb6b1dd6e1ce826e69c.js"
+    },
+    "frontend-aae98a023eadf147f011.js": {
+      "name": "frontend-aae98a023eadf147f011.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-aae98a023eadf147f011.js",
+      "publicPath": "static/frontend/frontend-aae98a023eadf147f011.js"
+    },
+    "frontend-b41c590363a322506491.js": {
+      "name": "frontend-b41c590363a322506491.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-b41c590363a322506491.js",
+      "publicPath": "static/frontend/frontend-b41c590363a322506491.js"
+    },
+    "frontend-e45e3c562fc270db262c.js": {
+      "name": "frontend-e45e3c562fc270db262c.js",
+      "path": "/home/mominur/Desktop/Appseed/priv-rocket-django-pro/frontend/static/frontend/frontend-e45e3c562fc270db262c.js",
+      "publicPath": "static/frontend/frontend-e45e3c562fc270db262c.js"
+    }
+  },
+  "chunks": {
+    "frontend": [
+      "frontend-60c509d6fbfb364a52d0.js"
+    ]
+  },
+  "publicPath": "static/frontend/"
+}

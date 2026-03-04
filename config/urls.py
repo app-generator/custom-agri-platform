@@ -28,14 +28,9 @@ def trigger_error(request):
 urlpatterns = [
     path("", include("apps.pages.urls")),
     path("admin/", admin.site.urls),
-    path("", include("apps.dyn_api.urls")),
     path("users/", include("apps.users.urls")),
-    path("charts/", include("apps.charts.urls")),
     path("", include("apps.react.urls")),
-    path("", include("apps.dyn_dt.urls")),
     path("tasks/", include("apps.tasks.urls")),
-    path('payments/', include('apps.payments.urls')),
-    path('', include('apps.file_manager.urls')),
     path('accounts/', include('allauth.urls')),
     
     path('api/docs/schema', SpectacularAPIView.as_view(), name='schema'),

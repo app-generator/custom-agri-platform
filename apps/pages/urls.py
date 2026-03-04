@@ -4,30 +4,12 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("starter/", views.starter, name="starter"),
 
-    # Layout
-    path('layouts/stacked/', views.stacked, name="stacked"),
-    path('layouts/sidebar/', views.sidebar, name="sidebar"),
-
-    # Users
-    path('crud/products/', views.products, name="products"),
-    path('crud/add-product/', views.add_product, name="add_product"),
-    path('crud/edit-product/<int:pk>/', views.edit_product, name="edit_product"),
-    path('crud/delete-product/<int:pk>/', views.delete_product, name="delete_product"),
-
-
-    path('crud/users/', views.users, name="users"),
-
-    # Pages
-    path('pricing/', views.pricing, name="pricing_details"),
-    path('maintenance/', views.maintenance, name="maintenance"),
-    path('404/', views.error_404, name="error_404"),
-    path('500/', views.error_500, name="error_500"),
-    path('settings/', views.settings_view, name="settings"),
-    path('i18n/', views.i18n_view, name="i18n_view"),
-
-    # Playground
-    path('stacked-playground/', views.stacked_playground, name="stacked_playground"),
-    path('sidebar-playground/', views.sidebar_playground, name="sidebar_playground"),
+    # Farm
+    path("farm/create/", views.create_farm, name="create_farm"),
+    path("farm/edit/<int:pk>/", views.edit_farm, name="edit_farm"),
+    path("farm/delete/<int:pk>/", views.delete_farm, name="delete_farm"),
+    path("farm/<int:pk>/", views.farm_details, name="farm_details"),
+    path('farm/<int:pk>/save-parcel/', views.save_parcel, name='save_parcel'),
+    path('farm/<int:farm_id>/parcel/<int:parcel_id>/delete/', views.delete_parcel, name='delete_parcel'),
 ]

@@ -63,12 +63,7 @@ INSTALLED_APPS = [
     "apps.pages",
     "apps.common",
     "apps.users",
-    "apps.dyn_api",
-    "apps.charts", 
-    "apps.dyn_dt",
     "apps.tasks",
-    "apps.payments",
-    "apps.file_manager",
     "apps.react",
 
     "django_celery_results",
@@ -112,9 +107,6 @@ MIDDLEWARE = [
 
     "allauth.account.middleware.AccountMiddleware",
     # "wagtail.contrib.redirects.middleware.RedirectMiddleware",
-
-    
-
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -347,21 +339,7 @@ sentry_sdk.init(
     profiles_sample_rate=1.0,
 )
 
-
 X_FRAME_OPTIONS = 'SAMEORIGIN'
-
-# ### DYNAMIC_DATATB Settings ###
-DYNAMIC_DATATB = {
-    # SLUG -> Import_PATH 
-    'product'   : "apps.common.models.Product",
-}
-########################################
-
-# Syntax: URI -> Import_PATH
-DYNAMIC_API = {
-    # SLUG -> Import_PATH 
-    'product'   : "apps.common.models.Product",
-}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -370,3 +348,6 @@ REST_FRAMEWORK = {
     ],
 }
 ########################################
+
+
+GOOGLE_MAP_API_KEY = os.environ.get('GOOGLE_MAP_API_KEY')

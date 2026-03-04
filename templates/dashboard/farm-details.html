@@ -1,0 +1,210 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block extrastyle %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}&libraries=drawing"></script>
+
+<style>
+    #map {
+        height: 700px;
+        width: 100%;
+    }
+</style>
+{% endblock extrastyle %}
+
+{% block content %}
+
+    <div class="m-4">
+        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div class="rounded-lg" id="map"></div>
+
+            <form method="POST" action="{% url 'save_parcel' farm.id %}" class="mt-4">
+                {% csrf_token %}
+
+                <input type="hidden" name="polygon" id="polygonField">
+                <input type="hidden" name="parcel_id" id="parcelIdField">
+
+                <div class="flex items-center gap-3">
+                    <button type="submit" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                        Save Parcel
+                    </button>
+                    <button type="button" id="deleteParcelBtn" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                        Delete Selected Parcel
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    {{ parcels|json_script:"parcel-data" }}
+
+{% endblock content %}
+
+{% block extra_js %}
+
+<script>
+    let map;
+    let drawingManager;
+    let drawnPolygons = [];
+    let selectedPolygon = null;
+
+    function initMap() {
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 51.30, lng: 0.7},
+            zoom: 14,
+            mapTypeId: google.maps.MapTypeId.SATELLITE
+        });
+
+        drawingManager = new google.maps.drawing.DrawingManager({
+            drawingMode: google.maps.drawing.OverlayType.POLYGON,
+            drawingControl: true,
+            drawingControlOptions: {
+                position: google.maps.ControlPosition.TOP_CENTER,
+                drawingModes: ['polygon']
+            },
+            polygonOptions: {
+                editable: true,
+                draggable: true,
+                strokeColor: '#1565C0',
+                strokeOpacity: 0.9,
+                strokeWeight: 2,
+                fillColor: '#42A5F5',
+                fillOpacity: 0.3
+            }
+        });
+
+        drawingManager.setMap(map);
+
+        google.maps.event.addListener(drawingManager, 'overlaycomplete', function(e) {
+            const polygon = e.overlay;
+            polygon.parcelId = null;
+
+            drawnPolygons.push(polygon);
+
+            selectPolygon(polygon);
+            savePolygonCoords(polygon);
+
+            google.maps.event.addListener(polygon, 'dragend', function() {
+                selectPolygon(polygon);
+                savePolygonCoords(polygon);
+            });
+
+            google.maps.event.addListener(polygon.getPath(), 'set_at', function() {
+                selectPolygon(polygon);
+                savePolygonCoords(polygon);
+            });
+
+            google.maps.event.addListener(polygon.getPath(), 'insert_at', function() {
+                selectPolygon(polygon);
+                savePolygonCoords(polygon);
+            });
+
+        });
+
+        loadSavedParcels();
+    }
+
+    function loadSavedParcels() {
+
+        const parcelData = JSON.parse(
+            document.getElementById('parcel-data').textContent
+        );
+
+        parcelData.forEach(parcel => {
+
+            const coords = parcel.polygon.map(coord => ({
+                lat: coord[0],
+                lng: coord[1]
+            }));
+
+            const polygon = new google.maps.Polygon({
+                paths: coords,
+                strokeColor: '#1565C0',
+                strokeOpacity: 0.9,
+                strokeWeight: 2,
+                fillColor: '#42A5F5',
+                fillOpacity: 0.3,
+                editable: true,
+                draggable: true,
+                map: map
+            });
+
+            polygon.parcelId = parcel.id;
+
+            drawnPolygons.push(polygon);
+
+            google.maps.event.addListener(polygon, 'click', function() {
+                selectPolygon(polygon);
+            });
+
+            google.maps.event.addListener(polygon, 'dragend', function() {
+                selectPolygon(polygon);
+                savePolygonCoords(polygon);
+            });
+
+            google.maps.event.addListener(polygon.getPath(), 'set_at', function() {
+                selectPolygon(polygon);
+                savePolygonCoords(polygon);
+            });
+
+            google.maps.event.addListener(polygon.getPath(), 'insert_at', function() {
+                selectPolygon(polygon);
+                savePolygonCoords(polygon);
+            });
+
+        });
+    }
+
+    function selectPolygon(polygon) {
+        selectedPolygon = polygon;
+        savePolygonCoords(polygon);
+
+        if (polygon.parcelId) {
+            document.getElementById('parcelIdField').value = polygon.parcelId;
+        } else {
+            document.getElementById('parcelIdField').value = '';
+        }
+
+        drawnPolygons.forEach(p => {
+            p.setOptions({ strokeColor: '#1565C0' });
+        });
+
+        polygon.setOptions({ strokeColor: '#FF0000' });
+    }
+
+    function savePolygonCoords(polygon) {
+        const coords = polygon.getPath().getArray().map(latlng => [
+            latlng.lat(),
+            latlng.lng()
+        ]);
+
+        document.getElementById('polygonField').value = JSON.stringify(coords);
+    }
+
+    window.onload = initMap;
+</script>
+
+<script>
+    document.getElementById('deleteParcelBtn').addEventListener('click', function() {
+        if (!selectedPolygon) {
+            alert("Please select a parcel first.");
+            return;
+        }
+
+        if (!selectedPolygon.parcelId) {
+            selectedPolygon.setMap(null);
+            selectedPolygon = null;
+            return;
+        }
+
+        if (!confirm("Are you sure you want to delete this parcel?")) {
+            return;
+        }
+
+        window.location.href = `/farm/{{ farm.id }}/parcel/${selectedPolygon.parcelId}/delete/`;
+    });
+</script>
+
+{% endblock extra_js %}

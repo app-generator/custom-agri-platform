@@ -12,4 +12,8 @@ urlpatterns = [
     path("farm/<int:pk>/", views.farm_details, name="farm_details"),
     path('farm/<int:pk>/save-parcel/', views.save_parcel, name='save_parcel'),
     path('farm/<int:farm_id>/parcel/<int:parcel_id>/delete/', views.delete_parcel, name='delete_parcel'),
+
+    path("parcel/<int:parcel_id>/crop-plan/create/", views.create_crop_plan, name="create_crop_plan"),
+    path("crop-plan/<int:crop_plan_id>/action/add/", views.add_action, name="add_action"),
+    path("parcel/<int:parcel_id>/plans/", views.parcel_plans, name="parcel_plans"),
 ]

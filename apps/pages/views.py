@@ -149,3 +149,57 @@ def parcel_plans(request, parcel_id):
     })
 
   return JsonResponse(data, safe=False)
+
+
+#
+from apps.common.models import Tab, Sheet
+
+def tab_list(request):
+  tabs = Tab.objects.all()
+  sheets = Sheet.objects.all()
+
+  page_number = request.GET.get('page', 1) 
+  paginator = Paginator(tabs, 9)
+  try:
+    tabs = paginator.page(page_number)
+  except PageNotAnInteger:
+    tabs = paginator.page(1)
+  except EmptyPage:
+    tabs = paginator.page(paginator.num_pages)
+
+  context = {
+    'tabs': tabs,
+    'sheets': sheets,
+    'segment': 'tab'
+  }
+  return render(request, 'pages/tabs/index.html', context)
+
+
+def create_tab(request):
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    sheet_id = request.POST.get('sheet')
+    Tab.objects.get_or_create(
+      name=name,
+      sheet=get_object_or_404(Sheet, pk=sheet_id)
+    )
+    return redirect(request.META.get('HTTP_REFERER'))
+  
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def edit_tab(request, pk):
+  tab = get_object_or_404(Tab, pk=pk)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    sheet_id = request.POST.get('sheet')
+    tab.name = name
+    tab.sheet =  get_object_or_404(Sheet, pk=sheet_id)
+    tab.save()
+    return redirect(request.META.get('HTTP_REFERER'))
+  
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def delete_tab(request, pk):
+  tab = get_object_or_404(Tab, pk=pk)
+  tab.delete()
+  return redirect(request.META.get('HTTP_REFERER'))

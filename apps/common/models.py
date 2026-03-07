@@ -66,3 +66,33 @@ class ParcelAction(BaseModel):
 
     def __str__(self):
         return f"{self.action_type} - {self.date}"
+
+
+
+#
+
+class Sheet(BaseModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+    
+class Tab(BaseModel):
+    sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class FieldType(models.TextChoices):
+    STRING = "STRING", "String"
+    NUMERIC = "NUMERIC", "Numeric"
+    DATE = "DATE", "Date"
+
+class TabFields(BaseModel):
+    tab = models.ForeignKey(Tab, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    type = models.CharField(max_length=30, choices=FieldType.choices)
+
+    def __str__(self):
+        return self.name

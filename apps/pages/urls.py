@@ -16,4 +16,9 @@ urlpatterns = [
     path("parcel/<int:parcel_id>/crop-plan/create/", views.create_crop_plan, name="create_crop_plan"),
     path("crop-plan/<int:crop_plan_id>/action/add/", views.add_action, name="add_action"),
     path("parcel/<int:parcel_id>/plans/", views.parcel_plans, name="parcel_plans"),
+
+    path("tabs/", views.tab_list, name="tab_list"),
+    path("tab/create/", views.create_tab, name="create_tab"),
+    path("tab/edit/<int:pk>/", views.edit_tab, name="edit_tab"),
+    path("tab/delete/<int:pk>/", views.delete_tab, name="delete_tab"),
 ]

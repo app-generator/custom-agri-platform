@@ -18,7 +18,13 @@ urlpatterns = [
     path("parcel/<int:parcel_id>/plans/", views.parcel_plans, name="parcel_plans"),
 
     path("tabs/", views.tab_list, name="tab_list"),
+    path("tab/<int:pk>/", views.tab_detail, name="tab_detail"),
     path("tab/create/", views.create_tab, name="create_tab"),
     path("tab/edit/<int:pk>/", views.edit_tab, name="edit_tab"),
     path("tab/delete/<int:pk>/", views.delete_tab, name="delete_tab"),
+
+    path("tab-row/edit/<int:pk>/", views.tab_row_edit, name="tab_row_edit"),
+    path("tab-row/delete/<int:pk>/", views.tab_row_delete, name="tab_row_delete"),
+
+    path("tab-row/upload/<int:pk>/", views.tab_row_upload, name="tab_row_upload"),
 ]

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.common.models import Sheet, Tab, TabFields
+from apps.common.models import Sheet, Tab, TabFields, TabRow, TabCell
 from django.apps import apps
 from django.contrib import admin
 
@@ -27,3 +27,13 @@ class TabFieldsAdmin(admin.ModelAdmin):
     list_display = ('tab', 'name', )
 
 admin.site.register(TabFields, TabFieldsAdmin)
+
+class TabRowAdmin(admin.ModelAdmin):
+    list_display = ('tab', 'row_index', )
+
+admin.site.register(TabRow, TabRowAdmin)
+
+class TabCellAdmin(admin.ModelAdmin):
+    list_display = ('row', 'field', 'value', )
+
+admin.site.register(TabCell, TabCellAdmin)

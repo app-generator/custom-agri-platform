@@ -96,3 +96,30 @@ class TabFields(BaseModel):
 
     def __str__(self):
         return self.name
+    
+    
+class TabRow(BaseModel):
+    tab = models.ForeignKey(Tab, on_delete=models.CASCADE, related_name="rows")
+    row_index = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.tab.name} - Row {self.row_index}"
+
+
+class TabCell(BaseModel):
+    row = models.ForeignKey(TabRow, on_delete=models.CASCADE, related_name="cells")
+    field = models.ForeignKey(TabFields, on_delete=models.CASCADE)
+    value = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.field.name}: {self.value}"
+
+
+class Asset(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    row = models.ForeignKey(TabRow, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='asset')
+
+    @property
+    def filename(self):
+        return self.file.name

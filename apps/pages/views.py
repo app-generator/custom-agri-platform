@@ -1,143 +1,310 @@
-from django.shortcuts import render, redirect
+import json
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.http import JsonResponse
+from django.urls import reverse
 
+@login_required(login_url='/users/signin/')
 def index(request):
-
+  farms = Farm.objects.all()
   context = {
     'segment': 'dashboard',
+    'farms': farms
   }
   return render(request, "dashboard/index.html", context)
 
-def starter(request):
 
-  context = {}
-  return render(request, "pages/starter.html", context)
-
-
-# Layout
-def stacked(request):
-  context = {
-    'segment': 'stacked',
-    'parent': 'layouts'
-  }
-  return render(request, 'pages/layouts/stacked.html', context)
-
-def sidebar(request):
-  context = {
-    'segment': 'sidebar',
-    'parent': 'layouts'
-  }
-  return render(request, 'pages/layouts/sidebar.html', context)
-
-
-# CRUD
-def add_product(request):
+def create_farm(request):
   if request.method == 'POST':
-    form_data = {}
-    for attribute, value in request.POST.items():
-      if attribute == 'csrfmiddlewaretoken':
-        continue
-
-      form_data[attribute] = value
-
-    Product.objects.create(**form_data)
-
+    name = request.POST.get('name')
+    Farm.objects.get_or_create(
+      name=name,
+      user=request.user
+    )
     return redirect(request.META.get('HTTP_REFERER'))
-
+  
   return redirect(request.META.get('HTTP_REFERER'))
 
-def edit_product(request, pk):
-  product = Product.objects.get(pk=pk)
-
+def edit_farm(request, pk):
+  farm = get_object_or_404(Farm, pk=pk)
   if request.method == 'POST':
-    for attribute, value in request.POST.items():
-      if attribute == 'csrfmiddlewaretoken':
-        continue
-
-      setattr(product, attribute, value)
-      product.save()
-
+    name = request.POST.get('name')
+    farm.name = name
+    farm.save()
     return redirect(request.META.get('HTTP_REFERER'))
+  
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def delete_farm(request, pk):
+  farm = get_object_or_404(Farm, pk=pk)
+  farm.delete()
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def farm_details(request, pk):
+  farm = get_object_or_404(Farm, pk=pk)
+  parcels_qs = Parcel.objects.filter(farm=farm)
+  parcels = list(parcels_qs.values('id', 'polygon'))
+
+  crop_plans = CropPlan.objects.filter(parcel__farm=farm).select_related('parcel', 'crop_type')
+  crop_types = CropType.objects.all()
+  substances = Substance.objects.all()
+
+  context = {
+    'farm': farm,
+    'parcels': parcels,
+    'crop_plans': crop_plans,
+    'crop_types': crop_types,
+    'substances': substances,
+    'API_KEY': getattr(settings, 'GOOGLE_MAP_API_KEY')
+  }
+  return render(request, "dashboard/farm-details.html", context)
+
+@login_required(login_url='/users/signin/')
+def save_parcel(request, pk):
+  farm = get_object_or_404(Farm, pk=pk)
+
+  if request.method == "POST":
+    polygon_data = request.POST.get("polygon")
+    parcel_id = request.POST.get("parcel_id")
+
+    if polygon_data:
+      if parcel_id:
+        parcel = get_object_or_404(Parcel, id=parcel_id, farm=farm)
+        parcel.polygon = json.loads(polygon_data)
+        parcel.save()
+      else:
+        Parcel.objects.create(
+          farm=farm,
+          polygon=json.loads(polygon_data)
+        )
 
   return redirect(request.META.get('HTTP_REFERER'))
 
-def delete_product(request, pk):
-  product = Product.objects.get(pk=pk)
-  product.delete()
+
+@login_required(login_url='/users/signin/')
+def delete_parcel(request, farm_id, parcel_id):
+  farm = get_object_or_404(Farm, pk=farm_id)
+  parcel = get_object_or_404(Parcel, pk=parcel_id, farm=farm)
+
+  parcel.delete()
 
   return redirect(request.META.get('HTTP_REFERER'))
 
-def products(request):
-  search_filter = {}
-  if search := request.GET.get('search'):
-    search_filter['name__icontains'] = search
+@login_required
+def create_crop_plan(request, parcel_id):
+  parcel = get_object_or_404(Parcel, id=parcel_id)
 
-  product_list = Product.objects.filter(**search_filter)
+  if request.method == "POST":
+    crop_type = request.POST.get("crop_type")
+    year = request.POST.get("year")
 
-  page = request.GET.get('page', 1)
-  paginator = Paginator(product_list, 10)
+    CropPlan.objects.create(
+      parcel=parcel,
+      crop_type_id=crop_type,
+      year=year
+    )
 
+  return redirect(request.META.get("HTTP_REFERER"))
+
+@login_required
+def add_action(request, crop_plan_id):
+  crop_plan = get_object_or_404(CropPlan, id=crop_plan_id)
+
+  if request.method == "POST":
+    action_type = request.POST.get("action_type")
+    substance = request.POST.get("substance")
+    date = request.POST.get("date")
+
+    ParcelAction.objects.create(
+      crop_plan=crop_plan,
+      action_type=action_type,
+      substance_id=substance if substance else None,
+      date=date
+    )
+
+  return redirect(request.META.get("HTTP_REFERER"))
+
+
+def parcel_plans(request, parcel_id):
+  plans = CropPlan.objects.filter(parcel_id=parcel_id).select_related("crop_type")
+  data = []
+  for p in plans:
+    actions = []
+
+    for a in p.actions.all():
+      actions.append({
+        "type": a.action_type,
+        "date": str(a.date),
+        "substance": a.substance.name if a.substance else None
+      })
+
+    data.append({
+      "id": p.id,
+      "crop": p.crop_type.name,
+      "year": p.year,
+      "actions": actions
+    })
+
+  return JsonResponse(data, safe=False)
+
+
+#
+from apps.common.models import Tab, Sheet, TabFields, TabCell, TabRow, Asset
+
+def tab_list(request):
+  tabs = Tab.objects.all()
+  sheets = Sheet.objects.all()
+
+  page_number = request.GET.get('page', 1) 
+  paginator = Paginator(tabs, 9)
   try:
-      products = paginator.page(page)
+    tabs = paginator.page(page_number)
   except PageNotAnInteger:
-      products = paginator.page(1)
+    tabs = paginator.page(1)
   except EmptyPage:
-      products = paginator.page(paginator.num_pages)
+    tabs = paginator.page(paginator.num_pages)
 
   context = {
-    'segment': 'products',
-    'parent': 'crud',
-    'products': products,
-    'technology': TechnologyChoice.choices,
-    'discount': DiscountChoices.choices
+    'tabs': tabs,
+    'sheets': sheets,
+    'segment': 'tab'
   }
-  return render(request, 'pages/CRUD/products.html', context)
+  return render(request, 'pages/tabs/index.html', context)
 
-def users(request):
+def tab_detail(request, pk):
+  tab = get_object_or_404(Tab, pk=pk)
+  fields = list(TabFields.objects.filter(tab=tab).order_by("id"))
+  rows_qs = TabRow.objects.filter(tab=tab).order_by("row_index")
+
+  page_number = request.GET.get('page', 1) 
+  paginator = Paginator(rows_qs, 10)
+  try:
+    rows = paginator.page(page_number)
+  except PageNotAnInteger:
+    rows = paginator.page(1)
+  except EmptyPage:
+    rows = paginator.page(paginator.num_pages)
+
+  row_ids = [r.id for r in rows]
+  cells = TabCell.objects.filter(row_id__in=row_ids)
+  cell_map = {(c.row_id, c.field_id): c.value for c in cells}
+
+  assets = Asset.objects.filter(row_id__in=row_ids)
+  asset_map = {a.row_id: a for a in assets}
+
+  table_data = []
+  for row in rows:
+    row_cells = []
+
+    for field in fields:
+      value = cell_map.get((row.id, field.id), "")
+      row_cells.append(value)
+
+    asset = asset_map.get(row.id)
+    table_data.append((row, row_cells, asset))
+
   context = {
-    'segment': 'users',
-    'parent': 'crud'
+    "tab": tab,
+    "fields": fields,
+    "table_data": table_data,
+    "rows": rows,
+    "segment": "tab"
   }
-  return render(request, 'pages/CRUD/users.html', context)
+
+  return render(request, "pages/tabs/tab_detail.html", context)
+
+def create_tab(request):
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    sheet_id = request.POST.get('sheet')
+    Tab.objects.get_or_create(
+      name=name,
+      sheet=get_object_or_404(Sheet, pk=sheet_id)
+    )
+    return redirect(request.META.get('HTTP_REFERER'))
+  
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def edit_tab(request, pk):
+  tab = get_object_or_404(Tab, pk=pk)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    sheet_id = request.POST.get('sheet')
+    tab.name = name
+    tab.sheet =  get_object_or_404(Sheet, pk=sheet_id)
+    tab.save()
+    return redirect(request.META.get('HTTP_REFERER'))
+  
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def delete_tab(request, pk):
+  tab = get_object_or_404(Tab, pk=pk)
+  tab.delete()
+  return redirect(request.META.get('HTTP_REFERER'))
 
 
-# Pages
-def pricing(request):
-  return render(request, 'pages/pricing.html')
+def tab_row_edit(request, pk):
+  row = get_object_or_404(TabRow, pk=pk)
+  tab = row.tab
 
-def maintenance(request):
-  return render(request, 'pages/maintenance.html')
+  fields = TabFields.objects.filter(tab=tab)
 
-def error_404(request):
-  return render(request, 'pages/404.html')
+  cells = TabCell.objects.filter(row=row)
+  cell_map = {c.field_id: c for c in cells}
 
-def error_500(request):
-  return render(request, 'pages/500.html')
+  if request.method == "POST":
+    for field in fields:
+      value = request.POST.get(f"field_{field.id}")
 
-def settings_view(request):
+      cell = cell_map.get(field.id)
+
+      if cell:
+        cell.value = value
+        cell.save()
+      else:
+        TabCell.objects.create(
+          row=row,
+          field=field,
+          value=value
+        )
+
+    return redirect(reverse('tab_detail', args=[tab.id]))
+
   context = {
-    'segment': 'settings',
+    "row": row,
+    "fields": fields,
+    "cell_map": cell_map,
+    "segment": "tab"
   }
-  return render(request, 'pages/settings.html', context)
+
+  return render(request, "pages/tabs/tab_row_edit.html", context)
 
 
-# Playground
-def stacked_playground(request):
-  return render(request, 'pages/playground/stacked.html')
+def tab_row_delete(request, pk):
+  row = get_object_or_404(TabRow, pk=pk)
+  row.delete()
+  return redirect(request.META.get('HTTP_REFERER'))
 
 
-def sidebar_playground(request):
-  context = {
-    'segment': 'sidebar_playground',
-    'parent': 'playground'
-  }
-  return render(request, 'pages/playground/sidebar.html', context)
+def tab_row_upload(request, pk):
+  row = get_object_or_404(TabRow, pk=pk)
 
+  if request.method == "POST":
+    file = request.FILES.get("asset")
 
-# i18n
-def i18n_view(request):
-  context = {
-    'segment': 'i18n'
-  }
-  return render(request, 'pages/i18n.html', context)
+    if file:
+      Asset.objects.update_or_create(
+        user=request.user,
+        row=row,
+        defaults={
+          'file': file
+        }
+      )
+
+      return redirect(request.META.get('HTTP_REFERER'))
+  
+  return redirect(request.META.get('HTTP_REFERER'))

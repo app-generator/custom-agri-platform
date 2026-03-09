@@ -4,30 +4,27 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("starter/", views.starter, name="starter"),
 
-    # Layout
-    path('layouts/stacked/', views.stacked, name="stacked"),
-    path('layouts/sidebar/', views.sidebar, name="sidebar"),
+    # Farm
+    path("farm/create/", views.create_farm, name="create_farm"),
+    path("farm/edit/<int:pk>/", views.edit_farm, name="edit_farm"),
+    path("farm/delete/<int:pk>/", views.delete_farm, name="delete_farm"),
+    path("farm/<int:pk>/", views.farm_details, name="farm_details"),
+    path('farm/<int:pk>/save-parcel/', views.save_parcel, name='save_parcel'),
+    path('farm/<int:farm_id>/parcel/<int:parcel_id>/delete/', views.delete_parcel, name='delete_parcel'),
 
-    # Users
-    path('crud/products/', views.products, name="products"),
-    path('crud/add-product/', views.add_product, name="add_product"),
-    path('crud/edit-product/<int:pk>/', views.edit_product, name="edit_product"),
-    path('crud/delete-product/<int:pk>/', views.delete_product, name="delete_product"),
+    path("parcel/<int:parcel_id>/crop-plan/create/", views.create_crop_plan, name="create_crop_plan"),
+    path("crop-plan/<int:crop_plan_id>/action/add/", views.add_action, name="add_action"),
+    path("parcel/<int:parcel_id>/plans/", views.parcel_plans, name="parcel_plans"),
 
+    path("tabs/", views.tab_list, name="tab_list"),
+    path("tab/<int:pk>/", views.tab_detail, name="tab_detail"),
+    path("tab/create/", views.create_tab, name="create_tab"),
+    path("tab/edit/<int:pk>/", views.edit_tab, name="edit_tab"),
+    path("tab/delete/<int:pk>/", views.delete_tab, name="delete_tab"),
 
-    path('crud/users/', views.users, name="users"),
+    path("tab-row/edit/<int:pk>/", views.tab_row_edit, name="tab_row_edit"),
+    path("tab-row/delete/<int:pk>/", views.tab_row_delete, name="tab_row_delete"),
 
-    # Pages
-    path('pricing/', views.pricing, name="pricing_details"),
-    path('maintenance/', views.maintenance, name="maintenance"),
-    path('404/', views.error_404, name="error_404"),
-    path('500/', views.error_500, name="error_500"),
-    path('settings/', views.settings_view, name="settings"),
-    path('i18n/', views.i18n_view, name="i18n_view"),
-
-    # Playground
-    path('stacked-playground/', views.stacked_playground, name="stacked_playground"),
-    path('sidebar-playground/', views.sidebar_playground, name="sidebar_playground"),
+    path("tab-row/upload/<int:pk>/", views.tab_row_upload, name="tab_row_upload"),
 ]

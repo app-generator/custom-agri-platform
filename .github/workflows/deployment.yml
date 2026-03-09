@@ -1,0 +1,33 @@
+name: Production Deployment
+
+on:
+  push:
+    branches:
+      - main # Sesuaikan kalo branch utama lo namanya 'master'
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Execute Remote SSH Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            echo "Starting deployment..."
+            cd /opt/agri-platform
+            
+            sudo git fetch --all
+            sudo git reset --hard origin/main
+            
+            sudo chown -R deployUsr:deployUsr /opt/agri-platform
+            
+            sudo docker compose up -d --build
+            
+            sudo docker image prune -af
+            echo "Deployment successful!"

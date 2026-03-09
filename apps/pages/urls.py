@@ -3,9 +3,11 @@ from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
-    path("", views.index, name="index"),
+    path("", views.landing, name="landing"),
+    path("dashboard/", views.dashboard, name="dashboard"),
 
     # Farm
+    path("farms/", views.farms, name="farms"),
     path("farm/create/", views.create_farm, name="create_farm"),
     path("farm/edit/<int:pk>/", views.edit_farm, name="edit_farm"),
     path("farm/delete/<int:pk>/", views.delete_farm, name="delete_farm"),

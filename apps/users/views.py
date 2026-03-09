@@ -9,16 +9,13 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from apps.users.utils import user_filter
 
+User = get_user_model()
+
 # Create your views here.
-
-def index(request):
-    return HttpResponse("INDEX Users" + ' ')
-
-
 
 class SignInView(LoginView):
     form_class = SigninForm

@@ -1,0 +1,60 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Rocket Django - Styled with Tailwind/Flowbite AppSeed</title>
+    <meta name="description"
+        content="Open-Source Django starter styled with Tailwind/Flowbite - Actively supported by AppSeed.">
+
+    <link rel="canonical" href="https://github.com/app-generator/rocket-django">
+
+    <link rel="stylesheet" href="{% static 'dist/main.css' %}">
+</head>
+
+<body class="bg-[#f9f8e1]">
+
+    <div class="max-w-5xl mx-auto px-5 md:px-0">
+        <nav class="bg-[#f9f8e1] border-gray-200 py-3 rounded dark:bg-gray-900">
+            <div class="flex flex-wrap justify-end items-center mx-auto">
+                <ul class="font-medium flex flex-col py-3 border border-gray-100 rounded-lg md:flex-row md:space-x-3 rtl:space-x-reverse md:mt-0 md:border-0">
+                    <li>
+                        <a href="{% url "signin" %}" class="block text-[#915164] rounded-sm">Login</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    
+        <div class="w-full h-[1px] bg-[#915164]"></div>
+    
+        <section class="bg-[#f9f8e1] dark:bg-gray-900">
+            <div class="grid py-8 grid-cols-12">
+                <div class="place-self-center mr-auto col-span-12 md:col-span-7">
+                    <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-[#915164]">
+                        e-farm.ro
+                    </h1>
+                </div>
+                <div class="col-span-12 md:col-span-5">
+                    <span class="block md:text-right mb-5 text-lg text-[#915164]">All processed digitalized for your farm business</span>
+                    <div class="flex md:justify-end">
+                        <a href="{% url "signup" %}" class="block text-white bg-[#db573d] font-medium rounded-xl text-sm px-5 py-2.5">Register</a>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <img class="w-full h-[600px] rounded-2xl object-none md:object-cover" src="{% static "dist/img/home-bkg.png" %}" alt="">
+            </div>
+        </section>
+
+        <p class="text-center text-[#915164] mt-3">e-farm.ro @ All right reserved</p>
+    </div>
+
+    <script src="{% static 'dist/main.bundle.js' %}"></script>
+</body>
+
+</html>

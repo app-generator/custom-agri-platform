@@ -110,6 +110,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "config.urls"
+AUTH_USER_MODEL = "users.User"
 
 UI_TEMPLATES = os.path.join(BASE_DIR, 'templates') 
 

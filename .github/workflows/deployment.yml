@@ -21,7 +21,9 @@ jobs:
           script: |
             echo "Starting deployment..."
             cd /opt/agri-platform
-            
+
+            sudo chown -R execUsr:execUsr /opt/agri-platform
+          
             sudo git fetch --all
             sudo git reset --hard origin/main
             

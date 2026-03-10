@@ -1,37 +1,53 @@
-FROM python:3.11.5
+# ==========================================
+# STAGE 1: Frontend Builder (Node)
+# ==========================================
+FROM node:18-bullseye-slim AS frontend-builder
 
-# set environment variables
+WORKDIR /app
+
+# Copy config NPM dulu biar ke-cache sama Docker
+COPY package.json package-lock.json* ./
+# Pake npm ci lebih cepat dan strict dibanding npm i buat CI/CD
+RUN npm ci
+
+# Copy sisa source code buat di-compile Webpack
+COPY . .
+RUN npm run build
+
+
+# ==========================================
+# STAGE 2: Final Production Image (Python)
+# ==========================================
+# Pake versi -slim biar image sizenya drop drastis dari 1GB jadi ~200MB
+FROM python:3.11.5-slim 
+
+WORKDIR /app
+
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-COPY requirements.txt .
-# install python dependencies
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+# Install OS dependencies wajib buat compile psycopg2 (Postgres client)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
 
+# Install Python deps duluan biar layer ke-cache
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy sisa code backend dari host
 COPY . .
 
-# Install node 18 and npm
-RUN set -uex; \
-    apt-get update; \
-    apt-get install -y ca-certificates curl gnupg; \
-    mkdir -p /etc/apt/keyrings; \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
-    | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg; \
-    NODE_MAJOR=18; \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" \
-    > /etc/apt/sources.list.d/nodesource.list; \
-    apt-get update; \
-    apt-get install nodejs -y;
+# COPY hasil build Webpack/Assets dari STAGE 1
+# (Asumsi hasil build lari ke folder static atau dist, disesuaikan aja)
+COPY --from=frontend-builder /app/static ./static
+# Kalo webpack nulis file json buat Django, copy juga (liat dari screenshot lo ada webpack-stats.json)
+COPY --from=frontend-builder /app/webpack-stats.json ./
 
-# Install modules and webpack
-RUN npm i
-RUN npm run build
+# Expose port (Opsional cuma buat dokumentasi image)
+EXPOSE 5005
 
-# Manage Assets & DB 
-RUN python manage.py collectstatic --no-input 
-RUN python manage.py makemigrations
-RUN python manage.py migrate
-
-# gunicorn
+# CMD murni cuma jalanin server. 
+# Migrasi dan collectstatic udah di-handle sama 'command' di docker-compose.yml
 CMD ["gunicorn", "--config", "gunicorn-cfg.py", "config.wsgi"]

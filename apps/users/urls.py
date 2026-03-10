@@ -30,4 +30,7 @@ urlpatterns = [
     path('delete-user/<int:id>/', views.delete_user, name="delete_user"),
     path('update-user/<int:id>/', views.update_user, name="update_user"),
     path('user-change-password/<int:id>/', views.user_change_password, name="user_change_password"),
+
+    path('select-role/', views.select_role, name="select_role"),
+    path('settings/', views.setting_page, name="settings"),
 ]

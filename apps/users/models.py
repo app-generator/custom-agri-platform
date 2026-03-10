@@ -42,7 +42,7 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=50, choices=UserRole.choices, default=UserRole.FARMER)
+    role = models.CharField(max_length=50, choices=UserRole.choices, null=True, blank=True)
     avatar = models.ImageField(upload_to='avatar', null=True, blank=True)
 
     USERNAME_FIELD = 'email'

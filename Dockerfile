@@ -8,7 +8,7 @@ WORKDIR /app
 # Copy config NPM dulu biar ke-cache sama Docker
 COPY package.json package-lock.json* ./
 # Pake npm ci lebih cepat dan strict dibanding npm i buat CI/CD
-RUN npm ci
+RUN npm install
 
 # Copy sisa source code buat di-compile Webpack
 COPY . .

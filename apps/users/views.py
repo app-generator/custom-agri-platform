@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordChangeView, PasswordResetConfirmView
 from django.views.generic import CreateView
-from apps.users.models import Profile
+from apps.users.models import Profile, UserRole
 from apps.users.forms import SigninForm, SignupForm, UserPasswordChangeForm, UserSetPasswordForm, UserPasswordResetForm, ProfileForm
 from django.contrib.auth import logout
 from django.urls import reverse
@@ -20,11 +20,21 @@ User = get_user_model()
 class SignInView(LoginView):
     form_class = SigninForm
     template_name = "authentication/sign-in.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Login"
+        return context
 
 class SignUpView(CreateView):
     form_class = SignupForm
     template_name = "authentication/sign-up.html"
     success_url = "/users/signin/"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Register"
+        return context
 
 class UserPasswordChangeView(PasswordChangeView):
     template_name = 'authentication/password-change.html'
@@ -137,3 +147,62 @@ def user_change_password(request, id):
         user.set_password(request.POST.get('password'))
         user.save()
     return redirect(request.META.get('HTTP_REFERER'))
+
+
+#
+
+ROLE_INFO = {
+    'ADMIN': {
+        'description': 'Farm Admin info'
+    },
+    'FARMER': {
+        'description': 'Farmer Manager info'
+    },
+    'ENGINEER': {
+        'description': 'Engineer info'
+    },
+    'EXECUTIVE': {
+        'description': 'Execution Personnel info'
+    },
+    'LOGISTIC': {
+        'description': 'Logistic Personnel info'
+    },
+    'AUDITOR': {
+        'description': 'Auditor info'
+    },
+    'BUYER': {
+        'description': 'Buyer info'
+    },
+}
+
+def select_role(request):
+    user = request.user
+
+    if request.method == 'POST':
+        role = request.POST.get('role')
+        user.role = role
+        user.save()
+        return redirect('dashboard')
+
+    roles = []
+
+    for value, label in UserRole.choices:
+        roles.append({
+            'value': value,
+            'label': label,
+            'description': ROLE_INFO[value]['description']
+        })
+
+    context = {
+        'roles': roles,
+        'title': 'Select Role'
+    }
+
+    return render(request, 'authentication/select-role.html', context)
+
+
+def setting_page(request):
+    context = {
+        'title': 'Settings'
+    }
+    return render(request, 'pages/settings.html', context)

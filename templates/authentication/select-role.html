@@ -1,0 +1,56 @@
+{% extends "layouts/base-auth.html" %}
+{% load static %}
+
+{% block content %}
+
+<form method="POST" class="max-w-xl mx-auto py-10">
+    {% csrf_token %}
+
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">
+        Select Your Role
+    </h2>
+
+    <div class="mb-6">
+        <label class="block mb-2 text-sm font-medium text-gray-900">Role</label>
+        <select id="roleSelect" name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+            <option value="">Select a role</option>
+            {% for role in roles %}
+            <option value="{{ role.value }}" data-description="{{ role.description }}">
+                {{ role.label }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div id="roleDescription" class="hidden p-4 mb-6 text-sm text-blue-800 rounded-lg bg-blue-50 border border-blue-200"></div>
+
+    <div class="text-center">
+        <button type="submit" class="px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition">
+            Continue
+        </button>
+    </div>
+</form>
+
+{% endblock content %}
+
+
+{% block extra_js %}
+
+<script>
+    const select = document.getElementById("roleSelect");
+    const descriptionBox = document.getElementById("roleDescription");
+
+    select.addEventListener("change", function () {
+        const selected = select.options[select.selectedIndex];
+        const description = selected.dataset.description;
+
+        if (description) {
+            descriptionBox.innerHTML = "<strong>INFO:</strong> " + description;
+            descriptionBox.classList.remove("hidden");
+        } else {
+            descriptionBox.classList.add("hidden");
+        }
+    });
+</script>
+
+{% endblock extra_js %}

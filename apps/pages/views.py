@@ -17,7 +17,8 @@ def landing(request):
 @role_required(UserRole.ADMIN, UserRole.FARMER)
 def dashboard(request):
   context = {
-    'segment': 'dashboard'
+    'segment': 'dashboard',
+    'title': 'Dashboard'
   }
   return render(request, "dashboard/index.html", context)
 
@@ -25,7 +26,8 @@ def farms(request):
   farms = Farm.objects.all()
   context = {
     'segment': 'farm',
-    'farms': farms
+    'farms': farms,
+    'title': 'Farms'
   }
   return render(request, "pages/farms/index.html", context)
 
@@ -74,7 +76,8 @@ def farm_details(request, pk):
     'crop_plans': crop_plans,
     'crop_types': crop_types,
     'substances': substances,
-    'API_KEY': getattr(settings, 'GOOGLE_MAP_API_KEY')
+    'API_KEY': getattr(settings, 'GOOGLE_MAP_API_KEY'),
+    'title': farm.name
   }
   return render(request, "dashboard/farm-details.html", context)
 
@@ -186,7 +189,8 @@ def tab_list(request):
   context = {
     'tabs': tabs,
     'sheets': sheets,
-    'segment': 'tab'
+    'segment': 'tab',
+    'title': 'Tabs'
   }
   return render(request, 'pages/tabs/index.html', context)
 
@@ -227,7 +231,8 @@ def tab_detail(request, pk):
     "fields": fields,
     "table_data": table_data,
     "rows": rows,
-    "segment": "tab"
+    "segment": "tab",
+    "title": tab.name
   }
 
   return render(request, "pages/tabs/tab_detail.html", context)
@@ -293,7 +298,8 @@ def tab_row_edit(request, pk):
     "row": row,
     "fields": fields,
     "cell_map": cell_map,
-    "segment": "tab"
+    "segment": "tab",
+    "title": "Tab Rows"
   }
 
   return render(request, "pages/tabs/tab_row_edit.html", context)

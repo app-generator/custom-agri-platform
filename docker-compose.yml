@@ -7,14 +7,12 @@ services:
     build:
       context: .
     ports:
-      # Bind ke localhost aja, Nginx di host yang bakal nangkep dan proxy_pass ke sini
       - "127.0.0.1:8000:5005" # Asumsi gunicorn lo nge-serve di port 5005 dalem container
     networks:
       - agri_network
     volumes:
-      # Pake bind mount ke folder ./media lokal biar deployUsr tetep megang ownershipnya
-      - ./media:/app/media
-      - ./static:/app/static # (Opsional) Tambahin ini kalo Nginx host mau serve static files langsung
+      - /opt/agri-media:/app/media
+      - /opt/agri-static:/app/static # (Opsional) Tambahin ini kalo Nginx host mau serve static files langsung
     env_file:
       - /opt/secrets/.env
     command: >

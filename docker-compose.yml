@@ -1,50 +1,54 @@
 version: "3.8"
+
 services:
-  appseed-app:
-    container_name: appseed-app
-    restart: always
+  agri-app:
+    container_name: agri-app
+    restart: unless-stopped
     build:
       context: .
-    networks:
-      - db_network
-      - web_network
-    volumes:
-      - ./db.sqlite3:/db.sqlite3
-  nginx:
-    container_name: nginx
-    restart: always
-    image: "nginx:latest"
     ports:
-      - "5085:5085"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d
+      # Bind ke localhost aja, Nginx di host yang bakal nangkep dan proxy_pass ke sini
+      - "127.0.0.1:8000:5005" # Asumsi gunicorn lo nge-serve di port 5005 dalem container
     networks:
-      - web_network
+      - agri_network
+    volumes:
+      # Pake bind mount ke folder ./media lokal biar deployUsr tetep megang ownershipnya
+      - ./media:/app/media
+      - ./static:/app/static # (Opsional) Tambahin ini kalo Nginx host mau serve static files langsung
+    env_file:
+      - .env
+    command: >
+      sh -c "
+        python manage.py collectstatic --no-input
+        python manage.py makemigrations
+        python manage.py migrate
+        python manage.py seeder
+        gunicorn --config gunicorn-cfg.py config.wsgi
+      "
     depends_on:
-      - appseed-app
-  redis:
-    image: redis:7.0.12
-    container_name: redis
-    command: [ "redis-server", "--port", "6379", "--slave-read-only", "no" ]
-    restart: always
+      - agri-db
+
+  agri-db:
+    container_name: agri-db
+    restart: unless-stopped
+    image: postgres:15-alpine # Pake alpine biar imagesize kecil & secure
     ports:
-      - 6379:6379
-    networks:
-      - db_network
-  celery:
-    container_name: celery
-    restart: always
-    build:
-      context: .
-    networks:
-      - db_network
+      - "127.0.0.1:5432:5432" # Strict localhost binding buat access db client dari server doang
+    env_file:
+      - .env
     environment:
-      DJANGO_SETTINGS_MODULE: "config.settings"
-    command: "celery -A apps.tasks worker -l info -B"
-    depends_on:
-      - appseed-app
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      # Pake named volume buat DB biar aman dari permission error UID/GID Postgres
+      - agri-postgres-data:/var/lib/postgresql/data
+    networks:
+      - agri_network
+
 networks:
-  db_network:
+  agri_network:
     driver: bridge
-  web_network:
-    driver: bridge
+
+volumes:
+  agri-postgres-data:

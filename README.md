@@ -1,4 +1,4 @@
-# [Django Rocket PRO](https://app-generator.dev/product/rocket-pro/django/)
+# [Django Rocket PRO](https://app-generator.dev/product/rocket-pro/django/) 
 
 Premium **Django Starter with Tailwind/Flowbite** design, bundled with API, powerful servier-side DataTables, Charts, React Integration, Extended user profiles and Docker support.
 The product is designed to deliver the best possible user experience with highly customizable feature-rich pages. 

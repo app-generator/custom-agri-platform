@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordChangeView, PasswordResetConfirmView
 from django.views.generic import CreateView
@@ -73,14 +73,20 @@ def profile(request):
     return render(request, 'dashboard/profile.html', context)
 
 
+@login_required
 def upload_avatar(request):
-    profile = get_object_or_404(Profile, user=request.user)
-    if request.method == 'POST':
-        profile.avatar = request.FILES.get('avatar')
-        profile.save()
-        messages.success(request, 'Avatar uploaded successfully')
-    return redirect(request.META.get('HTTP_REFERER'))
+    if request.method == "POST" and request.FILES.get("avatar"):
+        user = request.user
 
+        if user.avatar:
+            user.avatar.delete(save=False)
+
+        user.avatar = request.FILES["avatar"]
+        user.save()
+
+        return JsonResponse({"status": "success"})
+
+    return JsonResponse({"status": "error"}, status=400)
 
 def change_password(request):
     user = request.user
@@ -206,3 +212,19 @@ def setting_page(request):
         'title': 'Settings'
     }
     return render(request, 'pages/settings.html', context)
+
+
+def update_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+
+        user.first_name = first_name
+        user.last_name = last_name
+
+        user.save()
+
+        return redirect(request.META.get('HTTP_REFERER'))
+
+    return redirect(request.META.get('HTTP_REFERER'))

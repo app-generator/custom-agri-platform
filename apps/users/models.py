@@ -1,3 +1,4 @@
+import os
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
@@ -38,12 +39,16 @@ class UserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
 
         return self.create_user(email, password, **extra_fields)
-    
+
+
+def user_avatar_path(instance, filename):
+    return os.path.join("avatar", str(instance.id), filename)
+
 class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=50, choices=UserRole.choices, null=True, blank=True)
-    avatar = models.ImageField(upload_to='avatar', null=True, blank=True)
+    avatar = models.ImageField(upload_to=user_avatar_path, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

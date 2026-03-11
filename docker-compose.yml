@@ -16,7 +16,7 @@ services:
       - ./media:/app/media
       - ./static:/app/static # (Opsional) Tambahin ini kalo Nginx host mau serve static files langsung
     env_file:
-      - .env
+      - /opt/secrets/.env
     command: >
       sh -c "
         python manage.py collectstatic --no-input

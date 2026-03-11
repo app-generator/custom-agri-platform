@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction
+from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import JsonResponse
@@ -37,23 +37,40 @@ def farms(request):
 def create_farm(request):
   if request.method == 'POST':
     name = request.POST.get('name')
-    Farm.objects.get_or_create(
+    address = request.POST.get('address')
+    farm = Farm.objects.create(
       name=name,
+      address=address
+    )
+    FarmMembership.objects.create(
+      farm=farm,
       user=request.user
     )
-    return redirect(request.META.get('HTTP_REFERER'))
-  
-  return redirect(request.META.get('HTTP_REFERER'))
+    return redirect(reverse('farms'))
+
+  context = {
+    'segment': 'farm',
+    'title': 'Create new Farm'
+  }
+  return render(request, "pages/farms/new.html", context)
 
 def edit_farm(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
   if request.method == 'POST':
     name = request.POST.get('name')
+    address = request.POST.get('address')
     farm.name = name
+    farm.address = address
     farm.save()
+
     return redirect(request.META.get('HTTP_REFERER'))
   
-  return redirect(request.META.get('HTTP_REFERER'))
+  context = {
+    'farm': farm,
+    'segment': 'farm',
+    'title': 'Edit Farm'
+  }
+  return render(request, "pages/farms/edit.html", context)
 
 def delete_farm(request, pk):
   farm = get_object_or_404(Farm, pk=pk)

@@ -27,3 +27,6 @@ apps/helpers
 !/media/Sales.csv
 
 package-lock.json
+
+.env2
+.env

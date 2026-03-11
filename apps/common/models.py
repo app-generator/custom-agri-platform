@@ -12,16 +12,25 @@ class BaseModel(models.Model):
         abstract = True
 
 class Farm(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    address = models.CharField(max_length=500, null=True, blank=True)
 
     def __str__(self):
         return self.name
 
+class FarmMembership(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("user", "farm")
+
+    def __str__(self):
+        return f"{self.user} -> {self.farm}"
+    
 class Parcel(BaseModel):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE)
     polygon = models.JSONField()
-    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class CropType(BaseModel):

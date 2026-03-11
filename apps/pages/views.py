@@ -14,7 +14,6 @@ from apps.users.models import UserRole
 def landing(request):
   return render(request, 'pages/landing.html')
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def dashboard(request):
   context = {
     'segment': 'dashboard',
@@ -23,15 +22,18 @@ def dashboard(request):
   return render(request, "dashboard/index.html", context)
 
 def farms(request):
-  farms = Farm.objects.all()
+  farms = Farm.objects.filter(
+    farmmembership__user=request.user
+  ).distinct()
+
   context = {
     'segment': 'farm',
     'farms': farms,
     'title': 'Farms'
   }
+
   return render(request, "pages/farms/index.html", context)
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def create_farm(request):
   if request.method == 'POST':
     name = request.POST.get('name')
@@ -43,7 +45,6 @@ def create_farm(request):
   
   return redirect(request.META.get('HTTP_REFERER'))
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def edit_farm(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
   if request.method == 'POST':
@@ -54,13 +55,11 @@ def edit_farm(request, pk):
   
   return redirect(request.META.get('HTTP_REFERER'))
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def delete_farm(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
   farm.delete()
   return redirect(request.META.get('HTTP_REFERER'))
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def farm_details(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
   parcels_qs = Parcel.objects.filter(farm=farm)
@@ -81,7 +80,6 @@ def farm_details(request, pk):
   }
   return render(request, "dashboard/farm-details.html", context)
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def save_parcel(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
 
@@ -103,7 +101,6 @@ def save_parcel(request, pk):
   return redirect(request.META.get('HTTP_REFERER'))
 
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def delete_parcel(request, farm_id, parcel_id):
   farm = get_object_or_404(Farm, pk=farm_id)
   parcel = get_object_or_404(Parcel, pk=parcel_id, farm=farm)
@@ -112,7 +109,6 @@ def delete_parcel(request, farm_id, parcel_id):
 
   return redirect(request.META.get('HTTP_REFERER'))
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def create_crop_plan(request, parcel_id):
   parcel = get_object_or_404(Parcel, id=parcel_id)
 
@@ -128,7 +124,6 @@ def create_crop_plan(request, parcel_id):
 
   return redirect(request.META.get("HTTP_REFERER"))
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def add_action(request, crop_plan_id):
   crop_plan = get_object_or_404(CropPlan, id=crop_plan_id)
 
@@ -146,7 +141,6 @@ def add_action(request, crop_plan_id):
 
   return redirect(request.META.get("HTTP_REFERER"))
 
-@role_required(UserRole.ADMIN, UserRole.FARMER)
 def parcel_plans(request, parcel_id):
   plans = CropPlan.objects.filter(parcel_id=parcel_id).select_related("crop_type")
   data = []

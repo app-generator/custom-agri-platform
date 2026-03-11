@@ -32,12 +32,11 @@ class Command(BaseCommand):
     help = "Reset and seed farms + users"
 
     def create_user(self, email, role):
-        user = User.objects.create_user(
+        return User.objects.create_user(
             email=email,
             password=PASSWORD,
             role=role
         )
-        return user
 
     @transaction.atomic
     def handle(self, *args, **kwargs):
@@ -47,16 +46,7 @@ class Command(BaseCommand):
         FarmMembership.objects.all().delete()
         Farm.objects.all().delete()
 
-        User.objects.filter(email__in=[
-            "farm_manager@example.com",
-            "farm_manager2@example.com",
-            "eng1@example.com",
-            "eng2@example.com",
-            "eng3@example.com",
-            "exec1@example.com",
-            "exec2@example.com",
-            "exec3@example.com",
-        ]).delete()
+        User.objects.all().delete()
 
         self.stdout.write("Creating farms...")
 
@@ -72,6 +62,7 @@ class Command(BaseCommand):
 
         self.stdout.write("Creating users...")
 
+        # FARM MANAGERS
         farm_manager = self.create_user(
             "farm_manager@example.com",
             UserRole.FARMER
@@ -82,6 +73,7 @@ class Command(BaseCommand):
             UserRole.FARMER
         )
 
+        # ENGINEERS
         eng1 = self.create_user(
             "eng1@example.com",
             UserRole.ENGINEER
@@ -97,6 +89,7 @@ class Command(BaseCommand):
             UserRole.ENGINEER
         )
 
+        # EXECUTIVES
         exec1 = self.create_user(
             "exec1@example.com",
             UserRole.EXECUTIVE
@@ -112,24 +105,69 @@ class Command(BaseCommand):
             UserRole.EXECUTIVE
         )
 
+        # LOGISTICS
+        logistic1 = self.create_user(
+            "logistic1@example.com",
+            UserRole.LOGISTIC
+        )
+
+        logistic2 = self.create_user(
+            "logistic2@example.com",
+            UserRole.LOGISTIC
+        )
+
+        # AUDITORS
+        auditor1 = self.create_user(
+            "auditor1@example.com",
+            UserRole.AUDITOR
+        )
+
+        auditor2 = self.create_user(
+            "auditor2@example.com",
+            UserRole.AUDITOR
+        )
+
+        # BUYERS
+        buyer1 = self.create_user(
+            "buyer1@example.com",
+            UserRole.BUYER
+        )
+
+        buyer2 = self.create_user(
+            "buyer2@example.com",
+            UserRole.BUYER
+        )
+
         self.stdout.write("Assigning farms...")
 
         assignments = [
+            # FARM MANAGERS
             (farm_manager, farm1),
             (farm_manager, farm2),
-
             (farm_manager2, farm1),
 
+            # ENGINEERS
             (eng1, farm1),
-
             (eng2, farm1),
             (eng2, farm2),
-
             (eng3, farm2),
 
+            # EXECUTIVES
             (exec1, farm1),
             (exec2, farm1),
             (exec3, farm1),
+
+            # LOGISTICS
+            (logistic1, farm1),
+            (logistic2, farm2),
+
+            # AUDITORS
+            (auditor1, farm1),
+            (auditor2, farm2),
+
+            # BUYERS
+            (buyer1, farm1),
+            (buyer2, farm2),
         ]
 
         for user, farm in assignments:

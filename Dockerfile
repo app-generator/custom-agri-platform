@@ -33,5 +33,8 @@ RUN python manage.py collectstatic --no-input
 RUN python manage.py makemigrations
 RUN python manage.py migrate
 
+# Seeder
+RUN python manage.py seeder
+
 # gunicorn
 CMD ["gunicorn", "--config", "gunicorn-cfg.py", "config.wsgi"]

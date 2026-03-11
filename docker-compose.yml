@@ -35,7 +35,7 @@ services:
     ports:
       - "127.0.0.1:5432:5432" # Strict localhost binding buat access db client dari server doang
     env_file:
-      - .env
+      - /opt/secrets/.env
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}

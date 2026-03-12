@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from apps.users.utils import user_filter
+from apps.common.models import Farm, Role
 
 User = get_user_model()
 
@@ -186,8 +187,15 @@ def select_role(request):
 
     if request.method == 'POST':
         role = request.POST.get('role')
-        user.role = role
-        user.save()
+        farm_id = request.POST.get('farm')
+        farm = get_object_or_404(Farm, pk=farm_id)
+        Role.objects.update_or_create(
+            user=user,
+            farm=farm,
+            defaults={
+                'role': role
+            }
+        )
         return redirect('dashboard')
 
     roles = []
@@ -201,6 +209,7 @@ def select_role(request):
 
     context = {
         'roles': roles,
+        'farms': Farm.objects.all(),
         'title': 'Select Role'
     }
 

@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership
+from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import JsonResponse
@@ -56,19 +56,28 @@ def create_farm(request):
 
 def edit_farm(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
+  tags = Tag.objects.all()
+
   if request.method == 'POST':
-    name = request.POST.get('name')
-    address = request.POST.get('address')
-    farm.name = name
-    farm.address = address
+    tags = request.POST.getlist('tags')
+
+    farm.name = request.POST.get('name')
+    farm.lat = request.POST.get("latitude")
+    farm.lon = request.POST.get("longitude")
+    farm.address = request.POST.get("address")
+
     farm.save()
+
+    farm.tags.set(tags)
 
     return redirect(request.META.get('HTTP_REFERER'))
   
   context = {
     'farm': farm,
     'segment': 'farm',
-    'title': 'Edit Farm'
+    'title': 'Edit Farm',
+    'tags': tags,
+    'API_KEY': getattr(settings, 'GOOGLE_MAP_API_KEY'),
   }
   return render(request, "pages/farms/edit.html", context)
 
@@ -340,3 +349,53 @@ def tab_row_upload(request, pk):
       return redirect(request.META.get('HTTP_REFERER'))
   
   return redirect(request.META.get('HTTP_REFERER'))
+
+
+def personnel(request):
+  context = {
+    'segment': 'personnel',
+    'title': 'Personnel'
+  }
+  return render(request, 'pages/farms/personnel.html', context)
+
+def tasks(request):
+  context = {
+    'segment': 'tasks',
+    'title': 'Tasks'
+  }
+  return render(request, 'pages/farms/tasks.html', context)
+
+def review_docs(request):
+  context = {
+    'segment': 'review_docs',
+    'title': 'Review Docs'
+  }
+  return render(request, 'pages/farms/review_docs.html', context)
+
+def pre_audit(request):
+  context = {
+    'segment': 'pre_audit',
+    'title': 'Pre Audit'
+  }
+  return render(request, 'pages/farms/pre_audit.html', context)
+
+def search(request):
+  context = {
+    'segment': 'search',
+    'title': 'Search'
+  }
+  return render(request, 'pages/farms/search.html', context)
+
+def certification(request):
+  context = {
+    'segment': 'certification',
+    'title': 'Certification'
+  }
+  return render(request, 'pages/farms/certification.html', context)
+
+def reports(request):
+  context = {
+    'segment': 'reports',
+    'title': 'Reports'
+  }
+  return render(request, 'pages/farms/reports.html', context)

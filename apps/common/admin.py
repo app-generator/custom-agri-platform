@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.common.models import Sheet, Tab, TabFields, TabRow, TabCell
+from apps.common.models import Sheet, Tab, TabFields, TabRow, TabCell, Tag, Farm, Role
 from django.apps import apps
 from django.contrib import admin
 
@@ -37,3 +37,7 @@ class TabCellAdmin(admin.ModelAdmin):
     list_display = ('row', 'field', 'value', )
 
 admin.site.register(TabCell, TabCellAdmin)
+
+admin.site.register(Tag)
+admin.site.register(Farm)
+admin.site.register(Role)

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from apps.users.models import UserRole
 
 User = get_user_model()
 
@@ -11,9 +12,18 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+class Tag(BaseModel):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class Farm(BaseModel):
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=500, null=True, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True)
+    lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    lon = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -134,3 +144,20 @@ class Asset(BaseModel):
     @property
     def filename(self):
         return self.file.name
+
+
+class Role(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_role')
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name='farm_role')
+    role = models.CharField(max_length=50, choices=UserRole.choices)
+    active = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if self.active:
+            Role.objects.filter(
+                user=self.user,
+                farm=self.farm,
+                active=True
+            ).exclude(pk=self.pk).update(active=False)
+
+        super().save(*args, **kwargs)

@@ -29,4 +29,13 @@ urlpatterns = [
     path("tab-row/delete/<int:pk>/", views.tab_row_delete, name="tab_row_delete"),
 
     path("tab-row/upload/<int:pk>/", views.tab_row_upload, name="tab_row_upload"),
+
+    #
+    path("personnel/", views.personnel, name="personnel"),
+    path("tasks/", views.tasks, name="tasks"),
+    path("review-docs/", views.review_docs, name="review_docs"),
+    path("pre-audit/", views.pre_audit, name="pre_audit"),
+    path("search/", views.search, name="search"),
+    path("certification/", views.certification, name="certification"),
+    path("reports/", views.reports, name="reports"),
 ]

@@ -10,6 +10,10 @@ from django.urls import reverse
 from apps.users.decorators import role_required
 from apps.users.models import UserRole
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 def landing(request):
   return render(request, 'pages/landing.html')
@@ -23,7 +27,8 @@ def dashboard(request):
 
 def farms(request):
   farms = Farm.objects.filter(
-    farmmembership__user=request.user
+    farm_role__user=request.user,
+    farm_role__active=True
   ).distinct()
 
   context = {
@@ -35,22 +40,36 @@ def farms(request):
   return render(request, "pages/farms/index.html", context)
 
 def create_farm(request):
+  tags = Tag.objects.all()
+
   if request.method == 'POST':
     name = request.POST.get('name')
     address = request.POST.get('address')
+    tags = request.POST.getlist('tags')
+    lat = request.POST.get("latitude")
+    lon = request.POST.get("longitude")
+
     farm = Farm.objects.create(
       name=name,
-      address=address
+      address=address,
+      lat=lat,
+      lon=lon
     )
-    FarmMembership.objects.create(
+    farm.tags.set(tags)
+
+    Role.objects.create(
+      user=request.user,
       farm=farm,
-      user=request.user
+      role=UserRole.ADMIN,
+      active=True
     )
     return redirect(reverse('farms'))
 
   context = {
     'segment': 'farm',
-    'title': 'Create new Farm'
+    'title': 'Create new Farm',
+    'tags': tags,
+    'API_KEY': getattr(settings, 'GOOGLE_MAP_API_KEY'),
   }
   return render(request, "pages/farms/new.html", context)
 
@@ -105,6 +124,26 @@ def farm_details(request, pk):
     'title': farm.name
   }
   return render(request, "dashboard/farm-details.html", context)
+
+
+def add_farm_manager(request, pk):
+  farm = get_object_or_404(Farm, pk=pk)
+  if request.method == 'POST':
+    user_id = request.POST.get('user')
+    user = get_object_or_404(User, pk=user_id)
+
+    role, created = Role.objects.update_or_create(
+      farm=farm,
+      role=UserRole.FARMER,
+      defaults={
+        'user': user,
+        'active': True
+      }
+    )
+
+    return redirect(request.META.get('HTTP_REFERER'))
+  
+  return redirect(request.META.get('HTTP_REFERER'))
 
 def save_parcel(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
@@ -399,3 +438,46 @@ def reports(request):
     'title': 'Reports'
   }
   return render(request, 'pages/farms/reports.html', context)
+
+
+# Request
+from apps.common.models import Role
+
+def role_request(request):
+  pending_requests = Role.objects.filter(
+    farm=request.user.active_farm,
+    active=False
+  )
+  context = {
+    'segment': 'request',
+    'parent': 'personnel',
+    'title': 'Role Request',
+    'pending_requests': pending_requests
+  }
+  return render(request, 'pages/farms/role_request.html', context)
+
+
+def onboarded_roles(request):
+  onboarded_roles = Role.objects.filter(
+    farm=request.user.active_farm,
+    active=True
+  )
+  context = {
+    'segment': 'onboarded',
+    'parent': 'personnel',
+    'title': 'Onboarded Roles',
+    'onboarded_roles': onboarded_roles
+  }
+  return render(request, 'pages/farms/onboarded.html', context)
+
+def accept_request(request, pk):
+  role = get_object_or_404(Role, pk=pk)
+  role.active = True
+  role.save()
+  return redirect(request.META.get('HTTP_REFERER'))
+
+
+def reject_request(request, pk):
+  role = get_object_or_404(Role, pk=pk)
+  role.delete()
+  return redirect(request.META.get('HTTP_REFERER'))

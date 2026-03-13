@@ -159,12 +159,12 @@ def user_change_password(request, id):
 #
 
 ROLE_INFO = {
-    'ADMIN': {
-        'description': 'Farm Admin info'
-    },
-    'FARMER': {
-        'description': 'Farmer Manager info'
-    },
+    # 'ADMIN': {
+    #     'description': 'Farm Admin info'
+    # },
+    # 'FARMER': {
+    #     'description': 'Farmer Manager info'
+    # },
     'ENGINEER': {
         'description': 'Engineer info'
     },
@@ -189,6 +189,7 @@ def select_role(request):
         role = request.POST.get('role')
         farm_id = request.POST.get('farm')
         farm = get_object_or_404(Farm, pk=farm_id)
+
         Role.objects.update_or_create(
             user=user,
             farm=farm,
@@ -199,8 +200,12 @@ def select_role(request):
         return redirect('dashboard')
 
     roles = []
+    excluded_roles = ['ADMIN', 'FARMER']
 
     for value, label in UserRole.choices:
+        if value in excluded_roles:
+            continue
+
         roles.append({
             'value': value,
             'label': label,
@@ -235,5 +240,17 @@ def update_profile(request):
         user.save()
 
         return redirect(request.META.get('HTTP_REFERER'))
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+def set_active_farm(request):
+    user = request.user
+    if request.method == 'POST':
+        farm_id = request.POST.get('farm')
+        farm = get_object_or_404(Farm, pk=farm_id)
+
+        user.active_farm = farm
+        user.save()
 
     return redirect(request.META.get('HTTP_REFERER'))

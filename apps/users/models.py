@@ -49,6 +49,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=50, choices=UserRole.choices, null=True, blank=True)
     avatar = models.ImageField(upload_to=user_avatar_path, null=True, blank=True)
+    active_farm = models.ForeignKey('common.Farm', on_delete=models.SET_NULL, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

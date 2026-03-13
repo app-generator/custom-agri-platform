@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GDAL 2.4.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+<metadata><bounds minlat="45.031584185705846" minlon="25.05924937152647" maxlat="45.03357341093812" maxlon="25.061289842987716"/></metadata>
+  <trk>
+    <name>RO008368527 - 6a</name>
+    <cmt>2.01</cmt>
+    <desc>TEREN ÎN PREGĂTIRE PENTRU ALTE CULTURI PERMANENTE</desc>
+    <src>2025</src>
+    <trkseg>
+      <trkpt lat="45.03269632000135" lon="25.061289842089796"></trkpt>
+      <trkpt lat="45.03269631345703" lon="25.061289837979466"></trkpt>
+      <trkpt lat="45.03269621358993" lon="25.061289779487506"></trkpt>
+      <trkpt lat="45.03269616860423" lon="25.06128975405453"></trkpt>
+      <trkpt lat="45.03268989760181" lon="25.061286206160673"></trkpt>
+      <trkpt lat="45.032634048562876" lon="25.06122835812061"></trkpt>
+      <trkpt lat="45.03245860910286" lon="25.06112028557385"></trkpt>
+      <trkpt lat="45.03228675378201" lon="25.0610414096263"></trkpt>
+      <trkpt lat="45.03199341094159" lon="25.060942096833138"></trkpt>
+      <trkpt lat="45.03192322892486" lon="25.06091029148936"></trkpt>
+      <trkpt lat="45.03184043889028" lon="25.060893703304167"></trkpt>
+      <trkpt lat="45.0316184887082" lon="25.060852559757848"></trkpt>
+      <trkpt lat="45.031584185705846" lon="25.060743498649238"></trkpt>
+      <trkpt lat="45.031726115609096" lon="25.06038627875423"></trkpt>
+      <trkpt lat="45.03182930970952" lon="25.060180433089783"></trkpt>
+      <trkpt lat="45.03199699495962" lon="25.05984141229648"></trkpt>
+      <trkpt lat="45.03214744117071" lon="25.0596113973919"></trkpt>
+      <trkpt lat="45.03241387522605" lon="25.0593512056652"></trkpt>
+      <trkpt lat="45.03254706329424" lon="25.059284722538614"></trkpt>
+      <trkpt lat="45.03286920549433" lon="25.05926688201051"></trkpt>
+      <trkpt lat="45.03350918744091" lon="25.05924937152647"></trkpt>
+      <trkpt lat="45.03357301665673" lon="25.05928121351415"></trkpt>
+      <trkpt lat="45.03357341093812" lon="25.059281410241237"></trkpt>
+      <trkpt lat="45.03336288750363" lon="25.059758034272985"></trkpt>
+      <trkpt lat="45.03318226648779" lon="25.060187927507894"></trkpt>
+      <trkpt lat="45.0329371391613" lon="25.060757048110382"></trkpt>
+      <trkpt lat="45.03269632158914" lon="25.061289842987716"></trkpt>
+      <trkpt lat="45.03269632000135" lon="25.061289842089796"></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

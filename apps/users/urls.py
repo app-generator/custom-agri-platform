@@ -34,4 +34,5 @@ urlpatterns = [
 
     path('select-role/', views.select_role, name="select_role"),
     path('settings/', views.setting_page, name="settings"),
+    path('set-active-farm/', views.set_active_farm, name="set_active_farm"),
 ]

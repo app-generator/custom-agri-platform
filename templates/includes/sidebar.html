@@ -7,7 +7,7 @@
                 <ul class="pb-2 space-y-2">
                     {% if role.role == 'FARMER' %}
                         {% include "includes/sidebar/farmer.html" %}
-                    {% elif role.role == 'ADMIN' %}
+                    {% elif role.role == 'ADMIN' or request.user.is_superuser %}
                         {% include "includes/sidebar/admin.html" %}
                     {% elif role.role == 'AUDITOR' %}
                         {% include "includes/sidebar/auditor.html" %}

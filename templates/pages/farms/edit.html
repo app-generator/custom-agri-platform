@@ -162,40 +162,40 @@
 </script>
 
 <script>
-document.querySelectorAll(".tag-pill").forEach(pill => {
+    document.querySelectorAll(".tag-pill").forEach(pill => {
 
-    pill.addEventListener("click", function () {
+        pill.addEventListener("click", function () {
 
-        const tagId = this.dataset.tagId;
-        const container = document.getElementById("tagContainer");
+            const tagId = this.dataset.tagId;
+            const container = document.getElementById("tagContainer");
 
-        const existingInput = document.getElementById("tag-input-" + tagId);
+            const existingInput = document.getElementById("tag-input-" + tagId);
 
-        if (existingInput) {
+            if (existingInput) {
 
-            existingInput.remove();
+                existingInput.remove();
 
-            this.classList.remove("bg-primary-600", "text-white", "border-primary-600");
-            this.classList.add("bg-gray-100", "text-gray-700", "border-gray-300");
+                this.classList.remove("bg-primary-600", "text-white", "border-primary-600");
+                this.classList.add("bg-gray-100", "text-gray-700", "border-gray-300");
 
-        } else {
+            } else {
 
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "tags";
-            input.value = tagId;
-            input.id = "tag-input-" + tagId;
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "tags";
+                input.value = tagId;
+                input.id = "tag-input-" + tagId;
 
-            container.appendChild(input);
+                container.appendChild(input);
 
-            this.classList.remove("bg-gray-100", "text-gray-700", "border-gray-300");
-            this.classList.add("bg-primary-600", "text-white", "border-primary-600");
+                this.classList.remove("bg-gray-100", "text-gray-700", "border-gray-300");
+                this.classList.add("bg-primary-600", "text-white", "border-primary-600");
 
-        }
+            }
+
+        });
 
     });
-
-});
 </script>
 
 {% endblock extra_js %}

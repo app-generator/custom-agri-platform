@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.common.models import Sheet, Tab, TabFields, TabRow, TabCell, Tag, Farm, Role
+from apps.common.models import Sheet, Tab, TabFields, TabRow, TabCell, Tag, Farm, Role, Invitation
 from django.apps import apps
 from django.contrib import admin
 
@@ -41,3 +41,4 @@ admin.site.register(TabCell, TabCellAdmin)
 admin.site.register(Tag)
 admin.site.register(Farm)
 admin.site.register(Role)
+admin.site.register(Invitation)

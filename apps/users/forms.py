@@ -28,6 +28,7 @@ class SignupForm(UserCreationForm):
         fields = ('email', )
 
     def __init__(self, *args, **kwargs):
+        invitation = kwargs.pop('invitation', None)
         super(SignupForm, self).__init__(*args, **kwargs)
 
         for field_name, field in self.fields.items():
@@ -35,7 +36,9 @@ class SignupForm(UserCreationForm):
             self.fields[field_name].widget.attrs['class'] = 'bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
             self.fields[field_name].widget.attrs['required'] = True
 
-
+        if invitation:
+            self.fields['email'].initial = invitation.email
+            self.fields['email'].widget.attrs['readonly'] = True
 
 class UserPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(widget=forms.EmailInput(attrs={

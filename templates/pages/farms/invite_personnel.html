@@ -1,0 +1,75 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <div class="m-4">
+        <div class="px-4 pt-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+            <div class="mb-5 flex justify-between items-center">
+                <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Invite Personnel</h1>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-6 gap-3 mb-3">
+                    <div class="col-span-3">
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Farm</label>
+                        <select name="farm" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mb-2" id="actionType">
+                            <option value="">Select Farm</option>
+                            {% for farm in farms %}
+                            <option value="{{ farm.id }}">{{ farm.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role</label>
+                        <select name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mb-2" id="actionType">
+                            <option value="">Select Role</option>
+                            {% for role in roles %}
+                            <option value="{{ role.value }}">{{ role.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Existing User
+                        </label>
+                        <select name="user" class="bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2">
+                            <option value="">Select existing user</option>
+                            {% for user in users %}
+                            <option value="{{ user.pk }}">{{ user.email }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-span-3">
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Invite by Email (for new user)
+                        </label>
+                        <input type="email" name="email" placeholder="user@example.com" class="bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2">
+                    </div>
+                </div>
+
+                <button class="text-white bg-primary-700 hover:bg-primary-800 font-medium rounded-lg text-sm px-5 py-2">Invite</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block extra_js %}
+
+<script>
+    const userSelect = document.querySelector('select[name="user"]');
+    const emailInput = document.querySelector('input[name="email"]');
+
+    userSelect.addEventListener("change", function(){
+        if(this.value){
+            emailInput.disabled = true;
+        } else {
+            emailInput.disabled = false;
+        }
+    });
+</script>
+
+{% endblock extra_js %}

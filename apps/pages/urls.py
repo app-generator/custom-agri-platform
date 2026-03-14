@@ -42,6 +42,11 @@ urlpatterns = [
 
     path("role-request/", views.role_request, name="role_request"),
     path("onboarded/", views.onboarded_roles, name="onboarded_roles"),
+    path("invite-personnel/", views.invite_personnel, name="invite_personnel"),
+    path("invitations/accept/", views.accept_invitation, name="accept_invitation"),
     path("accept/request/<int:pk>/", views.accept_request, name="accept_request"),
     path("reject/request/<int:pk>/", views.reject_request, name="reject_request"),
+
+    path("farms-to-request/", views.farms_to_request, name="farms_to_request"),
+    path("send-request/<int:pk>/", views.send_request, name="send_request"),
 ]

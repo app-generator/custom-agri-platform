@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from apps.users.utils import user_filter
-from apps.common.models import Farm, Role
+from apps.common.models import Farm, Role, Invitation
 
 User = get_user_model()
 
@@ -27,15 +27,73 @@ class SignInView(LoginView):
         context["title"] = "Login"
         return context
 
-class SignUpView(CreateView):
-    form_class = SignupForm
-    template_name = "authentication/sign-up.html"
-    success_url = "/users/signin/"
+# class SignUpView(CreateView):
+#     form_class = SignupForm
+#     template_name = "authentication/sign-up.html"
+#     success_url = "/users/signin/"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["title"] = "Register"
-        return context
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context["title"] = "Register"
+#         return context
+
+class SignUpView(CreateView):
+  form_class = SignupForm
+  template_name = "authentication/sign-up.html"
+  success_url = "/users/signin/"
+
+  def get_invitation(self):
+    if hasattr(self, "_invitation"):
+      return self._invitation
+
+    invite_token = self.request.GET.get("invite_token")
+
+    if invite_token:
+      self._invitation = Invitation.objects.filter(
+        token=invite_token,
+        accepted=False
+      ).first()
+    else:
+      self._invitation = None
+
+    return self._invitation
+
+  def get_form_kwargs(self):
+    kwargs = super().get_form_kwargs()
+    kwargs["invitation"] = self.get_invitation()
+    return kwargs
+
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    context["title"] = "Register"
+    context["invitation"] = self.get_invitation()
+    return context
+
+  def form_valid(self, form):
+    invitation = self.get_invitation()
+
+    if invitation:
+      form.instance.email = invitation.email
+
+    response = super().form_valid(form)
+
+    if invitation:
+      Role.objects.update_or_create(
+        farm=invitation.farm,
+        user=self.object,
+        role=invitation.role,
+        defaults={
+          "active": True
+        }
+      )
+
+      self.object.active_farm = invitation.farm
+      self.object.save()
+
+      invitation.accepted = True
+      invitation.save()
+
+    return response
 
 class UserPasswordChangeView(PasswordChangeView):
     template_name = 'authentication/password-change.html'

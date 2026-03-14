@@ -12,7 +12,7 @@ class RoleSelectionMiddleware:
         if request.user.is_authenticated and not request.user.is_superuser:
 
             allowed_paths = [
-                reverse('select_role'), reverse('signout'), reverse('signin'), reverse('signup')
+                reverse('select_role'), reverse('signout'), reverse('signin'), reverse('signup'), reverse('accept_invitation')
             ]
             is_role_exists = Role.objects.filter(user=request.user).exists()
             if not is_role_exists and request.path not in allowed_paths:

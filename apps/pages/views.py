@@ -2,13 +2,14 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag
+from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag, Invitation
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import JsonResponse
 from django.urls import reverse
 from apps.users.decorators import role_required
 from apps.users.models import UserRole
+from django.contrib import messages
 
 from django.contrib.auth import get_user_model
 
@@ -480,4 +481,147 @@ def accept_request(request, pk):
 def reject_request(request, pk):
   role = get_object_or_404(Role, pk=pk)
   role.delete()
+  return redirect(request.META.get('HTTP_REFERER'))
+
+
+from django.core.mail import send_mail
+
+def send_invitation_email(invitation):
+  existing_user = User.objects.filter(email=invitation.email).exists()
+
+  if existing_user:
+    invite_link = f"{settings.SITE_URL}/invitations/accept/?invite_token={invitation.token}"
+  else:
+    invite_link = f"{settings.SITE_URL}/users/signup/?invite_token={invitation.token}"
+
+  subject = f"You have been invited to join {invitation.farm.name}"
+
+  message = f"""
+You have been invited to join the farm "{invitation.farm.name}" with the role "{invitation.role}".
+
+Accept the invitation using the link below:
+{invite_link}
+"""
+
+  send_mail(
+    subject,
+    message,
+    settings.DEFAULT_FROM_EMAIL,
+    [invitation.email],
+    fail_silently=False
+  )
+
+def invite_personnel(request):
+  roles = [
+    {'value': v, 'label': l}
+    for v, l in UserRole.choices
+    if v not in ['ADMIN', 'FARMER']
+  ]
+
+  if request.method == 'POST':
+    farm_id = request.POST.get('farm')
+    role = request.POST.get('role')
+    user_id = request.POST.get('user')
+    email = request.POST.get('email')
+
+    farm = get_object_or_404(Farm, pk=farm_id)
+
+    if user_id:
+      user = get_object_or_404(User, pk=user_id)
+      email = user.email
+
+    invitation, created = Invitation.objects.get_or_create(
+      email=email,
+      farm=farm,
+      role=role,
+      accepted=False
+    )
+
+    if created:
+      send_invitation_email(invitation)
+
+  context = {
+    'segment': 'invite',
+    'parent': 'personnel',
+    'title': 'Invite Personnel',
+    'roles': roles,
+    'users': User.objects.all()
+  }
+
+  return render(request, 'pages/farms/invite_personnel.html', context)
+
+@login_required(login_url='/users/signin/')
+def accept_invitation(request):
+  token = request.GET.get('invite_token')
+
+  invitation = get_object_or_404(
+    Invitation,
+    token=token,
+    accepted=False
+  )
+
+  if request.user.email != invitation.email:
+    messages.error(request, "This invitation is not for your account.")
+    return redirect("dashboard")
+
+  Role.objects.update_or_create(
+    farm=invitation.farm,
+    user=request.user,
+    role=invitation.role,
+    defaults={
+      'active': True
+    }
+  )
+
+  request.user.active_farm = invitation.farm
+  request.user.save()
+
+  invitation.accepted = True
+  invitation.save()
+
+  messages.success(request, "Invitation accepted successfully.")
+  return redirect(reverse('settings'))
+
+
+def farms_to_request(request):
+  roles = [
+    {'value': v, 'label': l}
+    for v, l in UserRole.choices
+    if v not in ['ADMIN', 'FARMER']
+  ]
+
+  farms = Farm.objects.exclude(
+    farm_role__user=request.user,
+    farm_role__active=True
+  ).filter(
+    farm_role__role='FARMER',
+    farm_role__active=True
+  ).distinct()
+
+  context = {
+    'segment': 'farms',
+    'title': 'Farms to Request',
+    'roles': roles,
+    'farms': farms
+  }
+  return render(request, 'pages/farms/farms_to_request.html', context)
+
+
+def send_request(request, pk):
+  farm = get_object_or_404(Farm, pk=pk)
+  if request.method == 'POST':
+    role = request.POST.get('role')
+
+    Role.objects.get_or_create(
+      farm=farm,
+      user=request.user,
+      role=role,
+      active=False
+    )
+
+    request.user.active_farm = farm
+    request.user.save()
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
   return redirect(request.META.get('HTTP_REFERER'))

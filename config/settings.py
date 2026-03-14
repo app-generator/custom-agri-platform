@@ -269,8 +269,18 @@ CELERY_TASK_SERIALIZER    = 'json'
 CELERY_RESULT_SERIALIZER  = 'json'
 ########################################
 
+EMAIL_HOST =  os.getenv("EMAIL_HOST", "")
+EMAIL_HOST_USER =  os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD =  os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_PORT =  os.getenv("EMAIL_PORT", 587)
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", True)
+DEFAULT_FROM_EMAIL =  os.getenv("DEFAULT_FROM_EMAIL")
+SITE_URL = "http://localhost:8000"
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+if EMAIL_HOST and EMAIL_PORT:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

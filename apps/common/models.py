@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.users.models import UserRole
@@ -161,3 +162,11 @@ class Role(BaseModel):
             ).exclude(pk=self.pk).update(active=False)
 
         super().save(*args, **kwargs)
+
+
+class Invitation(BaseModel):
+    email = models.EmailField()
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
+    token = models.UUIDField(default=uuid.uuid4)
+    accepted = models.BooleanField(default=False)

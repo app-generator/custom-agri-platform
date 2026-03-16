@@ -28,17 +28,11 @@ class TabFieldsAdmin(admin.ModelAdmin):
 
 admin.site.register(TabFields, TabFieldsAdmin)
 
-class TabRowAdmin(admin.ModelAdmin):
-    list_display = ('tab', 'row_index', )
-
-admin.site.register(TabRow, TabRowAdmin)
-
-class TabCellAdmin(admin.ModelAdmin):
-    list_display = ('row', 'field', 'value', )
-
-admin.site.register(TabCell, TabCellAdmin)
 
 admin.site.register(Tag)
 admin.site.register(Farm)
 admin.site.register(Role)
 admin.site.register(Invitation)
+
+admin.site.register(TabRow)
+admin.site.register(TabCell)

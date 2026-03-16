@@ -1491,9 +1491,6 @@ input:checked + .toggle-bg {
 .max-w-2xl {
   max-width: 42rem;
 }
-.max-w-4xl {
-  max-width: 56rem;
-}
 .max-w-7xl {
   max-width: 80rem;
 }
@@ -2269,6 +2266,9 @@ input:checked + .toggle-bg {
 }
 .text-right {
   text-align: right;
+}
+.text-end {
+  text-align: end;
 }
 .align-baseline {
   vertical-align: baseline;

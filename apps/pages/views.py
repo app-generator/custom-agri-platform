@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag, Invitation
+from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag, Invitation, FieldType
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import JsonResponse
@@ -231,7 +231,7 @@ def parcel_plans(request, parcel_id):
 
 
 #
-from apps.common.models import Tab, Sheet, TabFields, TabCell, TabRow, Asset
+from apps.common.models import Tab, Sheet, TabFields, TabRow, Asset, TabCell
 
 def tab_list(request):
   tabs = Tab.objects.all()
@@ -256,54 +256,118 @@ def tab_list(request):
 
 def tab_detail(request, pk):
   tab = get_object_or_404(Tab, pk=pk)
-  fields = list(TabFields.objects.filter(tab=tab).order_by("id"))
-  rows_qs = TabRow.objects.filter(tab=tab).order_by("row_index")
+  fields = TabFields.objects.filter(tab=tab)
 
-  page_number = request.GET.get('page', 1) 
-  paginator = Paginator(rows_qs, 10)
-  try:
-    rows = paginator.page(page_number)
-  except PageNotAnInteger:
-    rows = paginator.page(1)
-  except EmptyPage:
-    rows = paginator.page(paginator.num_pages)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    type = request.POST.get('type')
 
-  row_ids = [r.id for r in rows]
-  cells = TabCell.objects.filter(row_id__in=row_ids)
-  cell_map = {(c.row_id, c.field_id): c.value for c in cells}
+    TabFields.objects.update_or_create(
+      tab=tab,
+      name=name,
+      defaults={'type': type}
+    )
 
-  assets = Asset.objects.filter(row_id__in=row_ids)
-  asset_map = {a.row_id: a for a in assets}
+    return redirect(request.META.get('HTTP_REFERER'))
 
-  table_data = []
-  for row in rows:
-    row_cells = []
+  context = {
+    'tab': tab,
+    'fields': fields,
+    'types': FieldType.choices
+  }
+  return render(request, "pages/tabs/tab_detail.html", context)
 
-    for field in fields:
-      value = cell_map.get((row.id, field.id), "")
-      row_cells.append(value)
 
-    asset = asset_map.get(row.id)
-    table_data.append((row, row_cells, asset))
+def edit_field(request, pk):
+  field = get_object_or_404(TabFields, pk=pk)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    type = request.POST.get('type')
+
+    field.name = name
+    field.type = type
+    field.save()
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
+  return redirect(request.META.get('HTTP_REFERER'))
+
+
+def delete_field(request, pk):
+  field = get_object_or_404(TabFields, pk=pk)
+  field.delete()
+  return redirect(request.META.get('HTTP_REFERER'))
+
+
+def add_data(request, pk):
+  tab = get_object_or_404(Tab, pk=pk)
+  fields = TabFields.objects.filter(tab=tab)
+  rows = TabRow.objects.filter(tab=tab).prefetch_related("cells")
+
+  if request.method == "POST":
+
+    delete_rows = request.POST.getlist("delete_rows")
+
+    rows_data = {}
+
+    for key, value in request.POST.items():
+      if key.startswith("data"):
+        row_key, field_id = key.replace("data[", "").replace("]", "").split("[")
+
+        if row_key not in rows_data:
+          rows_data[row_key] = {}
+
+        rows_data[row_key][field_id] = value
+
+    for row_key, cells in rows_data.items():
+
+      if row_key.startswith("row"):
+        row_id = row_key.replace("row", "")
+
+        # skip deleted rows
+        if row_id in delete_rows:
+          continue
+
+        tab_row = TabRow.objects.get(id=row_id)
+
+      else:
+        last = TabRow.objects.filter(tab=tab).order_by("-row_index").first()
+        next_index = 1 if not last else last.row_index + 1
+
+        tab_row = TabRow.objects.create(
+          tab=tab,
+          row_index=next_index
+        )
+
+      for field_id, value in cells.items():
+        TabCell.objects.update_or_create(
+          row=tab_row,
+          field_id=field_id,
+          defaults={"value": value}
+        )
+
+    # finally delete rows
+    if delete_rows:
+      TabRow.objects.filter(id__in=delete_rows).delete()
+
+    return redirect("add_data", pk=pk)
 
   context = {
     "tab": tab,
     "fields": fields,
-    "table_data": table_data,
-    "rows": rows,
-    "segment": "tab",
-    "title": tab.name
+    "rows": rows
   }
 
-  return render(request, "pages/tabs/tab_detail.html", context)
+  return render(request, "pages/sheets/add_data.html", context)
 
-def create_tab(request):
+
+def create_tab(request, sheet_id):
+  sheet = get_object_or_404(Sheet, pk=sheet_id)
   if request.method == 'POST':
     name = request.POST.get('name')
-    sheet_id = request.POST.get('sheet')
     Tab.objects.get_or_create(
       name=name,
-      sheet=get_object_or_404(Sheet, pk=sheet_id)
+      sheet=sheet
     )
     return redirect(request.META.get('HTTP_REFERER'))
   
@@ -313,9 +377,7 @@ def edit_tab(request, pk):
   tab = get_object_or_404(Tab, pk=pk)
   if request.method == 'POST':
     name = request.POST.get('name')
-    sheet_id = request.POST.get('sheet')
     tab.name = name
-    tab.sheet =  get_object_or_404(Sheet, pk=sheet_id)
     tab.save()
     return redirect(request.META.get('HTTP_REFERER'))
   
@@ -333,31 +395,10 @@ def tab_row_edit(request, pk):
 
   fields = TabFields.objects.filter(tab=tab)
 
-  cells = TabCell.objects.filter(row=row)
-  cell_map = {c.field_id: c for c in cells}
-
-  if request.method == "POST":
-    for field in fields:
-      value = request.POST.get(f"field_{field.id}")
-
-      cell = cell_map.get(field.id)
-
-      if cell:
-        cell.value = value
-        cell.save()
-      else:
-        TabCell.objects.create(
-          row=row,
-          field=field,
-          value=value
-        )
-
-    return redirect(reverse('tab_detail', args=[tab.id]))
 
   context = {
     "row": row,
     "fields": fields,
-    "cell_map": cell_map,
     "segment": "tab",
     "title": "Tab Rows"
   }
@@ -426,12 +467,52 @@ def search(request):
   }
   return render(request, 'pages/farms/search.html', context)
 
+
+###
 def certification(request):
+  sheets = Sheet.objects.all()
+
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    Sheet.objects.get_or_create(
+      name=name
+    )
+    return redirect(request.META.get('HTTP_REFERER'))
+  
   context = {
     'segment': 'certification',
-    'title': 'Certification'
+    'title': 'Certification',
+    'sheets': sheets
   }
   return render(request, 'pages/farms/certification.html', context)
+
+def edit_sheet(request, pk):
+  sheet = get_object_or_404(Sheet, pk=pk)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    sheet.name = name
+    sheet.save()
+    return redirect(request.META.get('HTTP_REFERER'))
+  
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def delete_sheet(request, pk):
+  sheet = get_object_or_404(Sheet, pk=pk)
+  sheet.delete()
+  return redirect(request.META.get('HTTP_REFERER'))
+
+
+def sheet_details(request, pk):
+  sheet = get_object_or_404(Sheet, pk=pk)
+  tabs = Tab.objects.filter(sheet=sheet)
+
+  context = {
+    'sheet': sheet,
+    'tabs': tabs
+  }
+  return render(request, 'pages/sheets/details.html', context)
+
+####
 
 def reports(request):
   context = {

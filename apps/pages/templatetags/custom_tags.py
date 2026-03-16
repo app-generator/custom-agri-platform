@@ -1,6 +1,6 @@
 from django import template
 from apps.users.models import UserRole
-from apps.common.models import Role
+from apps.common.models import Role, TabFields
 
 register = template.Library()
 
@@ -18,3 +18,14 @@ def get_farm_manager(farm):
         return role.user.email
     
     return None
+
+@register.filter
+def get_cell(cells, field_id):
+    for cell in cells:
+        if cell.field_id == field_id:
+            return cell
+    return None
+
+@register.filter
+def is_col_exists(tab):
+    return TabFields.objects.filter(tab=tab).exists()

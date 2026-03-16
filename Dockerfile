@@ -6,13 +6,15 @@ FROM node:18-bullseye-slim AS frontend-builder
 WORKDIR /app
 
 # Copy config NPM dulu biar ke-cache sama Docker
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json* yarn.lock* ./
 # Pake npm ci lebih cepat dan strict dibanding npm i buat CI/CD
-RUN npm install
+#RUN npm install
+RUN yarn install
 
 # Copy sisa source code buat di-compile Webpack
 COPY . .
-RUN npm run build
+#RUN npm run build
+RUN yarn build
 
 
 # ==========================================

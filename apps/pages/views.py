@@ -556,6 +556,26 @@ def onboarded_roles(request):
   }
   return render(request, 'pages/farms/onboarded.html', context)
 
+def pending_invitations(request):
+  pending_invitations = Invitation.objects.filter(
+    farm=request.user.active_farm,
+    accepted=False
+  )
+  context = {
+    'segment': 'pending',
+    'parent': 'personnel',
+    'title': 'Pending Roles',
+    'pending_invitations': pending_invitations
+  }
+  return render(request, 'pages/farms/pending.html', context)
+
+
+def remove_invitation(request, pk):
+  invitation = get_object_or_404(Invitation, pk=pk)
+  invitation.delete()
+
+  return redirect(request.META.get('HTTP_REFERER'))
+
 def accept_request(request, pk):
   role = get_object_or_404(Role, pk=pk)
   role.active = True

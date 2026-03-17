@@ -42,6 +42,8 @@ urlpatterns = [
 
     path("role-request/", views.role_request, name="role_request"),
     path("onboarded/", views.onboarded_roles, name="onboarded_roles"),
+    path("pending/", views.pending_invitations, name="pending_invitations"),
+    path("invitation/<int:pk>/", views.remove_invitation, name="remove_invitation"),
     path("invite-personnel/", views.invite_personnel, name="invite_personnel"),
     path("invitations/accept/", views.accept_invitation, name="accept_invitation"),
     path("accept/request/<int:pk>/", views.accept_request, name="accept_request"),

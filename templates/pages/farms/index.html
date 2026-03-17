@@ -8,7 +8,9 @@
             <div class="mb-5 flex justify-between items-center">
                 <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Farms</h1>
                 {% if request.user.role == 'FARMER' %}
-                <a href="{% url "create_farm" %}" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Add new Farm</a>
+                <a href="{% url "create_farm" %}" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Add Farm</a>
+                {% else %}
+                <a href="{% url "farms_to_request" %}" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Join Farm</a>
                 {% endif %}
             </div>
 
@@ -28,9 +30,11 @@
                             <th scope="col" class="px-6 py-3">
                                 Manager
                             </th>
+                            {% if request.user.role == 'FARMER' %}
                             <th scope="col" class="px-6 py-3">
                                 Action
                             </th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -49,7 +53,7 @@
                                 {% if farm|get_farm_manager %}
                                 <div class="inline-flex items-center gap-2">
                                     <span>{{ farm|get_farm_manager }}</span>
-                                    {% if role.role == 'ADMIN' %}
+                                    {% if role.role == 'FARMER' %}
                                     <a  href="#"
                                         data-modal-target="farm-manager-modal-{{ farm.pk }}" data-modal-toggle="farm-manager-modal-{{ farm.pk }}"
                                     >
@@ -60,13 +64,16 @@
                                     {% endif %}
                                 </div>
                                 {% else %}
-                                <button type="button" data-modal-target="farm-manager-modal-{{ farm.pk }}" data-modal-toggle="farm-manager-modal-{{ farm.pk }}" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-                                    <svg class="w-4 h-4 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/>
-                                    </svg>
-                                </button>
+                                    {% if request.user.role == 'FARMER' %}
+                                    <button type="button" data-modal-target="farm-manager-modal-{{ farm.pk }}" data-modal-toggle="farm-manager-modal-{{ farm.pk }}" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                        <svg class="w-4 h-4 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/>
+                                        </svg>
+                                    </button>
+                                    {% endif %}
                                 {% endif %}
                             </td>
+                            {% if request.user.role == 'FARMER' %}
                             <td class="px-6 py-4">
                                 <a href="{% url "edit_farm" farm.pk %}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -80,6 +87,7 @@
                                     </svg>
                                 </button>
                             </td>
+                            {% endif %}
                         </tr>
 
                         <!-- Delete farm Modal -->

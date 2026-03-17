@@ -3,6 +3,9 @@
 # ==========================================
 FROM node:18-bullseye-slim AS frontend-builder
 
+RUN groupadd -r deployGrp \
+ && useradd -r -g deployGrp -d /home/deployUsr -m deployUsr
+
 WORKDIR /app
 
 # Copy config NPM dulu biar ke-cache sama Docker
@@ -47,9 +50,12 @@ COPY --from=frontend-builder /app/static ./static
 # Kalo webpack nulis file json buat Django, copy juga (liat dari screenshot lo ada webpack-stats.json)
 COPY --from=frontend-builder /app/webpack-stats.json ./
 
+RUN chown -R deployUsr:deployGrp /app /home/deployUsr
 # Expose port (Opsional cuma buat dokumentasi image)
 EXPOSE 5005
 
 # CMD murni cuma jalanin server. 
 # Migrasi dan collectstatic udah di-handle sama 'command' di docker-compose.yml
 # CMD ["gunicorn", "--config", "gunicorn-cfg.py", "config.wsgi"]
+
+USER deployUsr

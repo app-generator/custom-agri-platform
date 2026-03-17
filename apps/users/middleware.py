@@ -1,6 +1,7 @@
 from django.shortcuts import redirect
 from django.urls import reverse
 from apps.common.models import Role
+from apps.users.models import UserRole
 
 
 class RoleSelectionMiddleware:
@@ -14,7 +15,13 @@ class RoleSelectionMiddleware:
             allowed_paths = [
                 reverse('select_role'), reverse('signout'), reverse('signin'), reverse('signup'), reverse('accept_invitation')
             ]
-            is_role_exists = Role.objects.filter(user=request.user).exists()
+
+            is_role_exists = False
+            if request.user.role == UserRole.FARMER:
+                is_role_exists = True
+            else:
+                is_role_exists = Role.objects.filter(user=request.user).exists()
+
             if not is_role_exists and request.path not in allowed_paths:
                 return redirect('select_role')
 

@@ -56,7 +56,7 @@
             <div class="tooltip-arrow" data-popper-arrow></div>
           </div>
 
-          {% if role.role == 'FARMER' %}
+          {% if request.user.role == 'FARMER' %}
           <form method="post" action="{% url "set_active_farm" %}">
             {% csrf_token %}
 

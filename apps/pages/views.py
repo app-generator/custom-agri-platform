@@ -19,6 +19,7 @@ User = get_user_model()
 def landing(request):
   return render(request, 'pages/landing.html')
 
+@login_required(login_url='/users/signin/')
 def dashboard(request):
   context = {
     'segment': 'dashboard',
@@ -26,6 +27,7 @@ def dashboard(request):
   }
   return render(request, "dashboard/index.html", context)
 
+@login_required(login_url='/users/signin/')
 def farms(request):
   farms = Farm.objects.filter(
     farm_role__user=request.user,
@@ -33,13 +35,14 @@ def farms(request):
   ).distinct()
 
   context = {
-    'segment': 'farm',
+    'segment': 'farms',
     'farms': farms,
     'title': 'Farms'
   }
 
   return render(request, "pages/farms/index.html", context)
 
+@login_required(login_url='/users/signin/')
 def create_farm(request):
   tags = Tag.objects.all()
 
@@ -78,6 +81,7 @@ def create_farm(request):
   }
   return render(request, "pages/farms/new.html", context)
 
+@login_required(login_url='/users/signin/')
 def edit_farm(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
   tags = Tag.objects.all()
@@ -105,11 +109,13 @@ def edit_farm(request, pk):
   }
   return render(request, "pages/farms/edit.html", context)
 
+@login_required(login_url='/users/signin/')
 def delete_farm(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
   farm.delete()
   return redirect(request.META.get('HTTP_REFERER'))
 
+@login_required(login_url='/users/signin/')
 def farm_details(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
   parcels_qs = Parcel.objects.filter(farm=farm)
@@ -130,7 +136,7 @@ def farm_details(request, pk):
   }
   return render(request, "dashboard/farm-details.html", context)
 
-
+@login_required(login_url='/users/signin/')
 def add_farm_manager(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
   if request.method == 'POST':
@@ -150,6 +156,7 @@ def add_farm_manager(request, pk):
   
   return redirect(request.META.get('HTTP_REFERER'))
 
+@login_required(login_url='/users/signin/')
 def save_parcel(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
 
@@ -170,7 +177,7 @@ def save_parcel(request, pk):
 
   return redirect(request.META.get('HTTP_REFERER'))
 
-
+@login_required(login_url='/users/signin/')
 def delete_parcel(request, farm_id, parcel_id):
   farm = get_object_or_404(Farm, pk=farm_id)
   parcel = get_object_or_404(Parcel, pk=parcel_id, farm=farm)
@@ -179,6 +186,7 @@ def delete_parcel(request, farm_id, parcel_id):
 
   return redirect(request.META.get('HTTP_REFERER'))
 
+@login_required(login_url='/users/signin/')
 def create_crop_plan(request, parcel_id):
   parcel = get_object_or_404(Parcel, id=parcel_id)
 
@@ -194,6 +202,7 @@ def create_crop_plan(request, parcel_id):
 
   return redirect(request.META.get("HTTP_REFERER"))
 
+@login_required(login_url='/users/signin/')
 def add_action(request, crop_plan_id):
   crop_plan = get_object_or_404(CropPlan, id=crop_plan_id)
 
@@ -211,6 +220,7 @@ def add_action(request, crop_plan_id):
 
   return redirect(request.META.get("HTTP_REFERER"))
 
+@login_required(login_url='/users/signin/')
 def parcel_plans(request, parcel_id):
   plans = CropPlan.objects.filter(parcel_id=parcel_id).select_related("crop_type")
   data = []
@@ -237,6 +247,7 @@ def parcel_plans(request, parcel_id):
 #
 from apps.common.models import Tab, Sheet, TabFields, TabRow, Asset, TabCell
 
+@login_required(login_url='/users/signin/')
 def tab_list(request):
   tabs = Tab.objects.all()
   sheets = Sheet.objects.all()
@@ -258,6 +269,7 @@ def tab_list(request):
   }
   return render(request, 'pages/tabs/index.html', context)
 
+@login_required(login_url='/users/signin/')
 def tab_detail(request, pk):
   tab = get_object_or_404(Tab, pk=pk)
   fields = TabFields.objects.filter(tab=tab)
@@ -281,7 +293,7 @@ def tab_detail(request, pk):
   }
   return render(request, "pages/tabs/tab_detail.html", context)
 
-
+@login_required(login_url='/users/signin/')
 def edit_field(request, pk):
   field = get_object_or_404(TabFields, pk=pk)
   if request.method == 'POST':
@@ -296,13 +308,13 @@ def edit_field(request, pk):
 
   return redirect(request.META.get('HTTP_REFERER'))
 
-
+@login_required(login_url='/users/signin/')
 def delete_field(request, pk):
   field = get_object_or_404(TabFields, pk=pk)
   field.delete()
   return redirect(request.META.get('HTTP_REFERER'))
 
-
+@login_required(login_url='/users/signin/')
 def add_data(request, pk):
   tab = get_object_or_404(Tab, pk=pk)
   fields = TabFields.objects.filter(tab=tab)
@@ -364,7 +376,7 @@ def add_data(request, pk):
 
   return render(request, "pages/sheets/add_data.html", context)
 
-
+@login_required(login_url='/users/signin/')
 def create_tab(request, sheet_id):
   sheet = get_object_or_404(Sheet, pk=sheet_id)
   if request.method == 'POST':
@@ -377,6 +389,7 @@ def create_tab(request, sheet_id):
   
   return redirect(request.META.get('HTTP_REFERER'))
 
+@login_required(login_url='/users/signin/')
 def edit_tab(request, pk):
   tab = get_object_or_404(Tab, pk=pk)
   if request.method == 'POST':
@@ -387,12 +400,13 @@ def edit_tab(request, pk):
   
   return redirect(request.META.get('HTTP_REFERER'))
 
+@login_required(login_url='/users/signin/')
 def delete_tab(request, pk):
   tab = get_object_or_404(Tab, pk=pk)
   tab.delete()
   return redirect(request.META.get('HTTP_REFERER'))
 
-
+@login_required(login_url='/users/signin/')
 def tab_row_edit(request, pk):
   row = get_object_or_404(TabRow, pk=pk)
   tab = row.tab
@@ -409,13 +423,13 @@ def tab_row_edit(request, pk):
 
   return render(request, "pages/tabs/tab_row_edit.html", context)
 
-
+@login_required(login_url='/users/signin/')
 def tab_row_delete(request, pk):
   row = get_object_or_404(TabRow, pk=pk)
   row.delete()
   return redirect(request.META.get('HTTP_REFERER'))
 
-
+@login_required(login_url='/users/signin/')
 def tab_row_upload(request, pk):
   row = get_object_or_404(TabRow, pk=pk)
 
@@ -435,7 +449,7 @@ def tab_row_upload(request, pk):
   
   return redirect(request.META.get('HTTP_REFERER'))
 
-
+@login_required(login_url='/users/signin/')
 def personnel(request):
   context = {
     'segment': 'personnel',
@@ -443,6 +457,7 @@ def personnel(request):
   }
   return render(request, 'pages/farms/personnel.html', context)
 
+@login_required(login_url='/users/signin/')
 def tasks(request):
   context = {
     'segment': 'tasks',
@@ -450,6 +465,7 @@ def tasks(request):
   }
   return render(request, 'pages/farms/tasks.html', context)
 
+@login_required(login_url='/users/signin/')
 def review_docs(request):
   context = {
     'segment': 'review_docs',
@@ -457,6 +473,7 @@ def review_docs(request):
   }
   return render(request, 'pages/farms/review_docs.html', context)
 
+@login_required(login_url='/users/signin/')
 def pre_audit(request):
   context = {
     'segment': 'pre_audit',
@@ -464,6 +481,7 @@ def pre_audit(request):
   }
   return render(request, 'pages/farms/pre_audit.html', context)
 
+@login_required(login_url='/users/signin/')
 def search(request):
   context = {
     'segment': 'search',
@@ -473,6 +491,7 @@ def search(request):
 
 
 ###
+@login_required(login_url='/users/signin/')
 def certification(request):
   sheets = Sheet.objects.all()
 
@@ -490,6 +509,7 @@ def certification(request):
   }
   return render(request, 'pages/farms/certification.html', context)
 
+@login_required(login_url='/users/signin/')
 def edit_sheet(request, pk):
   sheet = get_object_or_404(Sheet, pk=pk)
   if request.method == 'POST':
@@ -500,12 +520,14 @@ def edit_sheet(request, pk):
   
   return redirect(request.META.get('HTTP_REFERER'))
 
+@login_required(login_url='/users/signin/')
 def delete_sheet(request, pk):
   sheet = get_object_or_404(Sheet, pk=pk)
   sheet.delete()
   return redirect(request.META.get('HTTP_REFERER'))
 
 
+@login_required(login_url='/users/signin/')
 def sheet_details(request, pk):
   sheet = get_object_or_404(Sheet, pk=pk)
   tabs = Tab.objects.filter(sheet=sheet)
@@ -517,7 +539,7 @@ def sheet_details(request, pk):
   return render(request, 'pages/sheets/details.html', context)
 
 ####
-
+@login_required(login_url='/users/signin/')
 def reports(request):
   context = {
     'segment': 'reports',
@@ -529,6 +551,7 @@ def reports(request):
 # Request
 from apps.common.models import Role
 
+@login_required(login_url='/users/signin/')
 def role_request(request):
   pending_requests = Role.objects.filter(
     farm=request.user.active_farm,
@@ -542,7 +565,7 @@ def role_request(request):
   }
   return render(request, 'pages/farms/role_request.html', context)
 
-
+@login_required(login_url='/users/signin/')
 def onboarded_roles(request):
   onboarded_roles = Role.objects.filter(
     farm=request.user.active_farm,
@@ -556,6 +579,7 @@ def onboarded_roles(request):
   }
   return render(request, 'pages/farms/onboarded.html', context)
 
+@login_required(login_url='/users/signin/')
 def pending_invitations(request):
   pending_invitations = Invitation.objects.filter(
     farm=request.user.active_farm,
@@ -570,19 +594,21 @@ def pending_invitations(request):
   return render(request, 'pages/farms/pending.html', context)
 
 
+@login_required(login_url='/users/signin/')
 def remove_invitation(request, pk):
   invitation = get_object_or_404(Invitation, pk=pk)
   invitation.delete()
 
   return redirect(request.META.get('HTTP_REFERER'))
 
+@login_required(login_url='/users/signin/')
 def accept_request(request, pk):
   role = get_object_or_404(Role, pk=pk)
   role.active = True
   role.save()
   return redirect(request.META.get('HTTP_REFERER'))
 
-
+@login_required(login_url='/users/signin/')
 def reject_request(request, pk):
   role = get_object_or_404(Role, pk=pk)
   role.delete()
@@ -616,6 +642,7 @@ Accept the invitation using the link below:
     fail_silently=False
   )
 
+@login_required(login_url='/users/signin/')
 def invite_personnel(request):
   roles = [
     {'value': v, 'label': l}
@@ -688,6 +715,7 @@ def accept_invitation(request):
   return redirect(reverse('settings'))
 
 
+@login_required(login_url='/users/signin/')
 def farms_to_request(request):
   roles = [
     {'value': v, 'label': l}
@@ -712,6 +740,7 @@ def farms_to_request(request):
   return render(request, 'pages/farms/farms_to_request.html', context)
 
 
+@login_required(login_url='/users/signin/')
 def send_request(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
   if request.method == 'POST':

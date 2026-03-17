@@ -12,7 +12,7 @@ services:
       - agri_network
     volumes:
       - /opt/agri-media:/app/media
-      # - /opt/agri-static:/app/static # (Opsional) Tambahin ini kalo Nginx host mau serve static files langsung
+      - /opt/agri-static:/app/staticfiles # (Opsional) Tambahin ini kalo Nginx host mau serve static files langsung
     env_file:
       - /opt/secrets/.env
     command: >

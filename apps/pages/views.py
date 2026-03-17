@@ -61,9 +61,13 @@ def create_farm(request):
     Role.objects.create(
       user=request.user,
       farm=farm,
-      role=UserRole.ADMIN,
+      role=UserRole.FARMER,
       active=True
     )
+
+    request.user.active_farm = farm
+    request.user.save()
+    
     return redirect(reverse('farms'))
 
   context = {

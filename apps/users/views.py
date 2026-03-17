@@ -220,9 +220,9 @@ ROLE_INFO = {
     # 'ADMIN': {
     #     'description': 'Farm Admin info'
     # },
-    # 'FARMER': {
-    #     'description': 'Farmer Manager info'
-    # },
+    'FARMER': {
+        'description': 'Farmer Manager info'
+    },
     'ENGINEER': {
         'description': 'Engineer info'
     },
@@ -246,19 +246,24 @@ def select_role(request):
     if request.method == 'POST':
         role = request.POST.get('role')
         farm_id = request.POST.get('farm')
-        farm = get_object_or_404(Farm, pk=farm_id)
+        if role == UserRole.FARMER and not farm_id:
+            user.role = UserRole.FARMER
+            user.save()
+        else:
+            farm = get_object_or_404(Farm, pk=farm_id)
 
-        Role.objects.update_or_create(
-            user=user,
-            farm=farm,
-            defaults={
-                'role': role
-            }
-        )
-        return redirect('dashboard')
+            Role.objects.update_or_create(
+                user=user,
+                farm=farm,
+                defaults={
+                    'role': role
+                }
+            )
+
+        return redirect(reverse('settings'))
 
     roles = []
-    excluded_roles = ['ADMIN', 'FARMER']
+    excluded_roles = ['ADMIN']
 
     for value, label in UserRole.choices:
         if value in excluded_roles:

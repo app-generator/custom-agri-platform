@@ -52,4 +52,4 @@ EXPOSE 5005
 
 # CMD murni cuma jalanin server. 
 # Migrasi dan collectstatic udah di-handle sama 'command' di docker-compose.yml
-CMD ["gunicorn", "--config", "gunicorn-cfg.py", "config.wsgi"]
+# CMD ["gunicorn", "--config", "gunicorn-cfg.py", "config.wsgi"]

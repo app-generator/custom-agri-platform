@@ -12,12 +12,13 @@
                 {% csrf_token %}
 
                 <div class="grid grid-cols-6 gap-3 mb-3">
+                    <input type="hidden" name="farm" value="{{ request.user.active_farm.id }}">
                     <div class="col-span-3">
                         <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Farm</label>
-                        <select name="farm" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mb-2" id="actionType">
+                        <select disabled class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mb-2" id="actionType">
                             <option value="">Select Farm</option>
                             {% for farm in farms %}
-                            <option value="{{ farm.id }}">{{ farm.name }}</option>
+                            <option {% if request.user.active_farm.id == farm.id %}selected{% endif %} value="{{ farm.id }}">{{ farm.name }}</option>
                             {% endfor %}
                         </select>
                     </div>

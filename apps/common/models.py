@@ -1,4 +1,5 @@
 import uuid
+import os
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.users.models import UserRole
@@ -144,7 +145,7 @@ class Asset(BaseModel):
 
     @property
     def filename(self):
-        return self.file.name
+        return os.path.basename(self.file.name)
 
 
 class Role(BaseModel):

@@ -1533,6 +1533,12 @@ input:checked + .toggle-bg {
 .max-w-xs {
   max-width: 20rem;
 }
+.max-w-\[120px\] {
+  max-width: 120px;
+}
+.max-w-5xl {
+  max-width: 64rem;
+}
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -2488,6 +2494,10 @@ input:checked + .toggle-bg {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+.text-green-700 {
+  --tw-text-opacity: 1;
+  color: rgb(4 108 78 / var(--tw-text-opacity, 1));
 }
 .underline {
   text-decoration-line: underline;

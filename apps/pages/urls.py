@@ -60,7 +60,9 @@ urlpatterns = [
     path("field/edit/<int:pk>/", views.edit_field, name="edit_field"),
     path("field/delete/<int:pk>/", views.delete_field, name="delete_field"),
     path("add-new-field/<int:pk>/", views.add_new_field, name="add_new_field"),
+
     path("tab/<int:pk>/download-csv/", views.download_tab_csv, name="download_tab_csv"),
+    path("asset/<int:row_id>/download/", views.download_asset, name="download_asset"),
 
     path("add-data/<int:pk>/", views.add_data, name="add_data"),
 ]

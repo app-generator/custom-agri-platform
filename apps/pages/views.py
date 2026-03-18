@@ -538,6 +538,21 @@ def tab_details(request, pk):
           rows_data[row_key] = {}
         rows_data[row_key][field_id] = value
 
+    for key, file in request.FILES.items():
+      if key.startswith("file[row"):
+        row_id = key.replace("file[row", "").replace("]", "")
+        try:
+          row = TabRow.objects.get(id=row_id)
+          Asset.objects.update_or_create(
+            row=row,
+            defaults={
+              "file": file,
+              "user": request.user
+            }
+          )
+        except TabRow.DoesNotExist:
+          pass
+
     for row_key, cells in rows_data.items():
       if row_key.startswith("row"):
         row_id = row_key.replace("row", "")
@@ -579,8 +594,24 @@ def tab_details(request, pk):
   }
   return render(request, 'pages/sheets/details.html', context)
 
-import csv
-from django.http import HttpResponse
+import csv, os
+from django.http import HttpResponse, FileResponse, Http404
+
+def download_asset(request, row_id):
+  try:
+    asset = Asset.objects.get(pk=row_id)
+  except Asset.DoesNotExist:
+    raise Http404("File not found")
+
+  file_path = asset.file.path
+
+  if not os.path.exists(file_path):
+    raise Http404("File not found")
+
+  response = FileResponse(open(file_path, "rb"), as_attachment=True)
+  response["Content-Disposition"] = f'attachment; filename="{asset.filename}"'
+
+  return response
 
 def download_tab_csv(request, pk):
   tab = get_object_or_404(Tab, pk=pk)

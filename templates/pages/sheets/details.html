@@ -1,5 +1,5 @@
 {% extends "layouts/base.html" %}
-{% load static custom_tags %}
+{% load static custom_tags file_extension %}
 
 {% block content %}
 
@@ -8,7 +8,7 @@
             <div class="p-6 min-h-[600px] overflow-auto relative">
                 
                 {% if fields %}
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
 
                     <div id="delete-container"></div>
@@ -90,6 +90,7 @@
                                         </div>
                                         
                                     {% endfor %}
+                                    <th class="px-4">File</th>
                                     <th class="pe-1 border border-gray-300 text-center">
                                         Action
                                     </th>
@@ -110,6 +111,80 @@
                                         />
                                     </td>
                                     {% endfor %}
+                                    <td class="border border-gray-300 px-2">
+                                        <div class="flex items-center gap-2">
+
+                                            <label class="cursor-pointer text-blue-600 text-sm">
+                                                <svg class="w-4 h-4 text-blue-700" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fill-rule="evenodd" d="M12 3a1 1 0 0 1 .78.375l4 5a1 1 0 1 1-1.56 1.25L13 6.85V14a1 1 0 1 1-2 0V6.85L8.78 9.626a1 1 0 1 1-1.56-1.25l4-5A1 1 0 0 1 12 3ZM9 14v-1H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4v1a3 3 0 1 1-6 0Zm8 2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" clip-rule="evenodd"/>
+                                                </svg>
+
+                                                <input
+                                                    type="file"
+                                                    name="file[row{{row.id}}]"
+                                                    class="hidden"
+                                                    accept=".pdf,.jpg,.png,.jpeg,.txt"
+                                                    onchange="previewFile(this)"
+                                                />
+                                            </label>
+
+                                            {% with row.asset_set.first as asset %}
+                                                {% if asset %}
+                                                    <svg 
+                                                        data-modal-target="file-{{row.id}}" data-modal-toggle="file-{{row.id}}"
+                                                        class="w-4 h-4 text-green-700 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                                        <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/>
+                                                        <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                                                    </svg>
+
+                                                    <!-- Preview modal -->
+                                                    <div id="file-{{row.id}}" tabindex="-1" aria-hidden="true" class="hidden overflow-auto fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                                                        <div class="relative p-4 w-full max-w-5xl max-h-full">
+                                                            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                                                                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                                                    <div>
+                                                                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                                                            {{ asset.filename }}
+                                                                        </h3>
+                                                                    </div>
+                                                                    <div>
+                                                                        <a href="{% url "download_asset" asset.id %}">
+                                                                            <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+                                                                                <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+                                                                            </svg>
+                                                                        </a>
+                                                                    </div>
+                                                                    <div>
+                                                                        <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="file-{{row.id}}">
+                                                                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                                                            </svg>
+                                                                            <span class="sr-only">Close modal</span>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="p-4 md:p-5 space-y-4 overflow-auto">
+                                                                    {% if asset.filename|file_extension in ".jpg, .png, .gif" %}
+                                                                        <img class="w-full h-auto" src="/media/{{ asset.file }}" alt="df">
+                                                                    {% elif asset.filename|file_extension in ".mp4, .webm, .ogg" %}
+                                                                        <video class="w-full" height="700" controls>
+                                                                            <source src="/media/{{ asset.file }}" type="video/mp4">
+                                                                        </video>
+                                                                    {% elif asset.filename|file_extension in ".pdf, .txt" %}
+                                                                        <iframe src="/media/{{ asset.file }}" width="100%" height="700px"></iframe>
+                                                                    {% elif asset.filename|file_extension in ".csv" %}
+                                                                        <pre class="bg-dark text-white p-3 ">{{ asset.csv_text }}</pre>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endwith %}
+
+                                        </div>
+                                    </td>
                                     <td class="border border-gray-300 text-center">
                                         <button
                                             type="button"
@@ -344,6 +419,10 @@
 
         {% endfor %}
 
+        const fileTd = document.createElement("td")
+        fileTd.className = "border border-gray-300 px-2"
+        tr.appendChild(fileTd)
+
         const actionTd = document.createElement("td")
         actionTd.className = "border border-gray-300 text-center"
 
@@ -365,6 +444,24 @@
 
     updateSerials()
 
+</script>
+
+<script>
+  function previewFile(input){
+    const file = input.files[0]
+    if(!file) return
+
+    const container = input.closest("div")
+
+    let existing = container.querySelector("a")
+    if(existing) existing.remove()
+
+    const span = document.createElement("span")
+    span.className = "text-xs text-gray-700 truncate max-w-[120px]"
+    span.innerText = file.name
+
+    container.appendChild(span)
+  }
 </script>
 
 {% endblock extra_js %}

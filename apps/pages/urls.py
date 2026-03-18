@@ -21,7 +21,7 @@ urlpatterns = [
     path("parcel/<int:parcel_id>/plans/", views.parcel_plans, name="parcel_plans"),
 
     path("tabs/", views.tab_list, name="tab_list"),
-    path("tab/<int:pk>/", views.tab_detail, name="tab_detail"),
+    # path("tab/<int:pk>/", views.tab_detail, name="tab_detail"),
     path("tab/create/<int:sheet_id>/", views.create_tab, name="create_tab"),
     path("tab/edit/<int:pk>/", views.edit_tab, name="edit_tab"),
     path("tab/delete/<int:pk>/", views.delete_tab, name="delete_tab"),
@@ -53,12 +53,14 @@ urlpatterns = [
     path("send-request/<int:pk>/", views.send_request, name="send_request"),
 
     # Sheet
-    path("sheet/<int:pk>/", views.sheet_details, name="sheet_details"),
+    path("tab/<int:pk>/", views.tab_details, name="tab_details"),
     path("sheet/edit/<int:pk>/", views.edit_sheet, name="edit_sheet"),
     path("sheet/delete/<int:pk>/", views.delete_sheet, name="delete_sheet"),
 
     path("field/edit/<int:pk>/", views.edit_field, name="edit_field"),
     path("field/delete/<int:pk>/", views.delete_field, name="delete_field"),
+    path("add-new-field/<int:pk>/", views.add_new_field, name="add_new_field"),
+    path("tab/<int:pk>/download-csv/", views.download_tab_csv, name="download_tab_csv"),
 
     path("add-data/<int:pk>/", views.add_data, name="add_data"),
 ]

@@ -1089,6 +1089,15 @@ input:checked + .toggle-bg {
 .top-4 {
   top: 1rem;
 }
+.right-1 {
+  right: 0.25rem;
+}
+.top-1 {
+  top: 0.25rem;
+}
+.right-2 {
+  right: 0.5rem;
+}
 .z-10 {
   z-index: 10;
 }
@@ -1400,6 +1409,9 @@ input:checked + .toggle-bg {
 .min-h-0 {
   min-height: 0px;
 }
+.min-h-\[600px\] {
+  min-height: 600px;
+}
 .w-1 {
   width: 0.25rem;
 }
@@ -1538,6 +1550,9 @@ input:checked + .toggle-bg {
 }
 .table-fixed {
   table-layout: fixed;
+}
+.border-collapse {
+  border-collapse: collapse;
 }
 .-translate-x-full {
   --tw-translate-x: -100%;
@@ -1801,6 +1816,9 @@ input:checked + .toggle-bg {
 }
 .rounded-md {
   border-radius: 0.375rem;
+}
+.rounded-none {
+  border-radius: 0px;
 }
 .rounded-sm {
   border-radius: 0.125rem;
@@ -2198,6 +2216,9 @@ input:checked + .toggle-bg {
 .pb-4 {
   padding-bottom: 1rem;
 }
+.pe-1 {
+  padding-inline-end: 0.25rem;
+}
 .pl-0 {
   padding-left: 0px;
 }
@@ -2257,6 +2278,9 @@ input:checked + .toggle-bg {
 }
 .pt-9 {
   padding-top: 2.25rem;
+}
+.pr-6 {
+  padding-right: 1.5rem;
 }
 .text-left {
   text-align: left;
@@ -2954,6 +2978,10 @@ input:checked + .toggle-bg {
   }
 }
 
+.last\:border-r-0:last-child {
+  border-right-width: 0px;
+}
+
 .hover\:border-gray-300:hover {
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
@@ -3029,6 +3057,11 @@ input:checked + .toggle-bg {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
 }
 
+.hover\:bg-green-700:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(4 108 78 / var(--tw-bg-opacity, 1));
+}
+
 .hover\:text-blue-600:hover {
   --tw-text-opacity: 1;
   color: rgb(28 100 242 / var(--tw-text-opacity, 1));
@@ -3074,6 +3107,11 @@ input:checked + .toggle-bg {
   color: rgb(29 78 216 / var(--tw-text-opacity, 1));
 }
 
+.hover\:text-red-500:hover {
+  --tw-text-opacity: 1;
+  color: rgb(240 82 82 / var(--tw-text-opacity, 1));
+}
+
 .hover\:text-white:hover {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
@@ -3089,6 +3127,10 @@ input:checked + .toggle-bg {
 
 .focus\:z-10:focus {
   z-index: 10;
+}
+
+.focus\:border-0:focus {
+  border-width: 0px;
 }
 
 .focus\:border-blue-500:focus {

@@ -10,7 +10,7 @@ from django.urls import reverse
 from apps.users.decorators import role_required
 from apps.users.models import UserRole
 from django.contrib import messages
-
+from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -269,10 +269,8 @@ def tab_list(request):
   }
   return render(request, 'pages/tabs/index.html', context)
 
-@login_required(login_url='/users/signin/')
-def tab_detail(request, pk):
+def add_new_field(request, pk):
   tab = get_object_or_404(Tab, pk=pk)
-  fields = TabFields.objects.filter(tab=tab)
 
   if request.method == 'POST':
     name = request.POST.get('name')
@@ -286,12 +284,7 @@ def tab_detail(request, pk):
 
     return redirect(request.META.get('HTTP_REFERER'))
 
-  context = {
-    'tab': tab,
-    'fields': fields,
-    'types': FieldType.choices
-  }
-  return render(request, "pages/tabs/tab_detail.html", context)
+  return redirect(request.META.get('HTTP_REFERER'))
 
 @login_required(login_url='/users/signin/')
 def edit_field(request, pk):
@@ -527,16 +520,86 @@ def delete_sheet(request, pk):
   return redirect(request.META.get('HTTP_REFERER'))
 
 
-@login_required(login_url='/users/signin/')
-def sheet_details(request, pk):
-  sheet = get_object_or_404(Sheet, pk=pk)
-  tabs = Tab.objects.filter(sheet=sheet)
+def tab_details(request, pk):
+  tab = get_object_or_404(Tab, pk=pk)
+  tabs = Tab.objects.filter(sheet=tab.sheet)
+
+  fields = TabFields.objects.filter(tab=tab)
+  rows = TabRow.objects.filter(tab=tab).prefetch_related("cells")
+
+  if request.method == "POST":
+    delete_rows = request.POST.getlist("delete_rows")
+
+    rows_data = {}
+    for key, value in request.POST.items():
+      if key.startswith("data"):
+        row_key, field_id = key.replace("data[", "").replace("]", "").split("[")
+        if row_key not in rows_data:
+          rows_data[row_key] = {}
+        rows_data[row_key][field_id] = value
+
+    for row_key, cells in rows_data.items():
+      if row_key.startswith("row"):
+        row_id = row_key.replace("row", "")
+        if row_id in delete_rows:
+          continue
+        tab_row = TabRow.objects.get(id=row_id)
+      else:
+        last = TabRow.objects.filter(tab=tab).order_by("-row_index").first()
+        next_index = 1 if not last else last.row_index + 1
+        tab_row = TabRow.objects.create(tab=tab, row_index=next_index)
+
+      for field_id, value in cells.items():
+        TabCell.objects.update_or_create(
+          row=tab_row,
+          field_id=field_id,
+          defaults={"value": value}
+        )
+
+    field_names = request.POST.getlist("field_names")
+    for field_id, value in request.POST.items():
+      if field_id.startswith("field_names["):
+        fid = field_id.replace("field_names[", "").replace("]", "")
+        TabFields.objects.filter(id=fid, tab=tab).update(name=value)
+
+    if delete_rows:
+      TabRow.objects.filter(id__in=delete_rows).delete()
+
+    return redirect(request.META.get('HTTP_REFERER'))
 
   context = {
-    'sheet': sheet,
-    'tabs': tabs
+    'segment': 'certification',
+    'active_tab': tab,
+    'tabs': tabs,
+    'tab': tab,
+    'sheet': tab.sheet,
+    'fields': fields,
+    'rows': rows,
+    'types': FieldType.choices
   }
   return render(request, 'pages/sheets/details.html', context)
+
+import csv
+from django.http import HttpResponse
+
+def download_tab_csv(request, pk):
+  tab = get_object_or_404(Tab, pk=pk)
+
+  fields = TabFields.objects.filter(tab=tab).order_by("id")
+  rows = TabRow.objects.filter(tab=tab).prefetch_related("cells").order_by("row_index")
+
+  response = HttpResponse(content_type="text/csv")
+  response["Content-Disposition"] = f'attachment; filename="{tab.name}.csv"'
+
+  writer = csv.writer(response)
+
+  writer.writerow([f.name for f in fields])
+
+  for row in rows:
+    cell_map = {c.field_id: c.value for c in row.cells.all()}
+    writer.writerow([cell_map.get(f.id, "") for f in fields])
+
+  return response
 
 ####
 @login_required(login_url='/users/signin/')
@@ -606,6 +669,11 @@ def accept_request(request, pk):
   role = get_object_or_404(Role, pk=pk)
   role.active = True
   role.save()
+
+  role_user = role.user
+  role_user.active_farm = role.farm
+  role_user.save()
+
   return redirect(request.META.get('HTTP_REFERER'))
 
 @login_required(login_url='/users/signin/')
@@ -614,8 +682,6 @@ def reject_request(request, pk):
   role.delete()
   return redirect(request.META.get('HTTP_REFERER'))
 
-
-from django.core.mail import send_mail
 
 def send_invitation_email(invitation):
   existing_user = User.objects.filter(email=invitation.email).exists()

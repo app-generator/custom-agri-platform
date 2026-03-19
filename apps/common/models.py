@@ -42,8 +42,19 @@ class FarmMembership(BaseModel):
     
 class Parcel(BaseModel):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, null=True)
+    info = models.TextField(null=True, blank=True)
+    culture = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+class ParcelPolygon(BaseModel):
+    parcel = models.ForeignKey(Parcel, on_delete=models.CASCADE)
     polygon = models.JSONField()
 
+    def __str__(self):
+        return f"{self.parcel.name} polygon"
 
 class CropType(BaseModel):
     name = models.CharField(max_length=100)
@@ -60,7 +71,7 @@ class Substance(BaseModel):
 
 
 class CropPlan(BaseModel):
-    parcel = models.ForeignKey(Parcel, on_delete=models.CASCADE, related_name='crop_plans')
+    parcel_polygon = models.ForeignKey(ParcelPolygon, on_delete=models.CASCADE, related_name='crop_plans')
     crop_type = models.ForeignKey(CropType, on_delete=models.CASCADE)
     year = models.IntegerField()
 

@@ -13,13 +13,18 @@ urlpatterns = [
     path("farm/delete/<int:pk>/", views.delete_farm, name="delete_farm"),
     path("farm/<int:pk>/", views.farm_details, name="farm_details"),
     path("add-farm-manager/<int:pk>/", views.add_farm_manager, name="add_farm_manager"),
-    path('farm/<int:pk>/save-parcel/', views.save_parcel, name='save_parcel'),
-    path('farm/<int:pk>/import-parcel/', views.import_parcel, name='import_parcel'),
-    path('farm/<int:farm_id>/parcel/<int:parcel_id>/delete/', views.delete_parcel, name='delete_parcel'),
+    path('farm/<int:pk>/save-parcel/', views.save_parcel_polygon, name='save_parcel_polygon'),
+    path('farm/<int:pk>/import-parcel/', views.import_parcel_polygon, name='import_parcel_polygon'),
+    path('farm/<int:parcel_id>/parcel/<int:parcel_polygon_id>/delete/', views.delete_parcel_polygon, name='delete_parcel_polygon'),
 
-    path("parcel/<int:parcel_id>/crop-plan/create/", views.create_crop_plan, name="create_crop_plan"),
+    path('create/<int:farm_id>/parcel/', views.create_parcel, name='create_parcel'),
+    path('edit/<int:pk>/parcel/', views.edit_parcel, name='edit_parcel'),
+    path('delete/<int:pk>/parcel/', views.delete_parcel, name='delete_parcel'),
+    path('detail/<int:pk>/parcel/', views.parcel_details, name='parcel_details'),
+
+    path("parcel/<int:parcel_polygon_id>/crop-plan/create/", views.create_crop_plan, name="create_crop_plan"),
     path("crop-plan/<int:crop_plan_id>/action/add/", views.add_action, name="add_action"),
-    path("parcel/<int:parcel_id>/plans/", views.parcel_plans, name="parcel_plans"),
+    path("parcel/<int:parcel_polygon_id>/plans/", views.parcel_plans, name="parcel_plans"),
 
     path("tabs/", views.tab_list, name="tab_list"),
     # path("tab/<int:pk>/", views.tab_detail, name="tab_detail"),

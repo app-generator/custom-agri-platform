@@ -1,0 +1,40 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <div class="m-4">
+        <div class="px-4 pt-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+            <h1 class="text-lg font-bold text-gray-900 dark:text-white mb-5">Edit Parcel</h1>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-6 gap-5 mb-5">
+                    <div class="col-span-6">
+                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+                        <input type="text" name="name" value="{{ parcel.name }}"
+                            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="Name" required>
+                    </div>
+                    <div class="col-span-6">
+                        <label for="info" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Info</label>
+                        <textarea name="info" id="info" placeholder="Info" rows="5"
+                            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        >{{ parcel.info }}</textarea>
+                    </div>
+                    <div class="col-span-6">
+                        <label for="culture" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Culture</label>
+                        <textarea name="culture" id="culture" placeholder="Culture" rows="5"
+                            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        >{{ parcel.culture }}</textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="text-white bg-primary-700 hover:bg-primary-800 font-medium rounded-lg text-sm px-5 py-2.5">Save</button>
+
+            </form>
+        </div>
+    </div>
+
+{% endblock content %}

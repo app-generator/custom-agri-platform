@@ -3,7 +3,7 @@ import gpxpy
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag, Invitation, FieldType
+from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag, Invitation, FieldType, ParcelPolygon
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import JsonResponse
@@ -119,12 +119,67 @@ def delete_farm(request, pk):
 @login_required(login_url='/users/signin/')
 def farm_details(request, pk):
   farm = get_object_or_404(Farm, pk=pk)
-  parcels_qs = Parcel.objects.filter(farm=farm)
-  parcels = list(parcels_qs.values('id', 'polygon'))
+  parcels = Parcel.objects.filter(farm=farm)
+
+  context = {
+    'farm': farm,
+    'parcels': parcels,
+    'title': farm.name,
+  }
+  return render(request, "pages/parcels/index.html", context)
+
+def create_parcel(request, farm_id):
+  farm = get_object_or_404(Farm, pk=farm_id)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    info = request.POST.get('info')
+    culture = request.POST.get('culture')
+
+    Parcel.objects.create(
+      farm=farm,
+      name=name,
+      info=info,
+      culture=culture
+    )
+
+    return redirect(reverse('farm_details', args=[farm.id]))
+
+  context = {
+    'segment': 'farms'
+  }
+  return render(request, "pages/parcels/create.html", context)
+
+def edit_parcel(request, pk):
+  parcel = get_object_or_404(Parcel, pk=pk)
+  if request.method == 'POST':
+    parcel.name = request.POST.get('name')
+    parcel.info = request.POST.get('info')
+    parcel.culture = request.POST.get('culture')
+
+    parcel.save()
+    return redirect(reverse('farm_details', args=[parcel.farm.id]))
+
+  context = {
+    'segment': 'farms',
+    'parcel': parcel
+  }
+  return render(request, "pages/parcels/edit.html", context)
+
+def delete_parcel(request, pk):
+  parcel = get_object_or_404(Parcel, pk=pk)
+  parcel.delete()
+
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def parcel_details(request, pk):
+  parcel = get_object_or_404(Parcel, pk=pk)
+
+  parcel_polygon_qs = ParcelPolygon.objects.filter(parcel=parcel)
+  parcel_polygons = list(parcel_polygon_qs.values('id', 'polygon'))
 
   all_coords = []
-  for parcel in parcels:
-    polygon = parcel['polygon']
+  for parcel_polygon in parcel_polygons:
+    polygon = parcel_polygon['polygon']
     all_coords.extend(polygon)
 
   if all_coords:
@@ -133,22 +188,22 @@ def farm_details(request, pk):
   else:
     avg_lat, avg_lng = 51.30, 0.7
 
-  crop_plans = CropPlan.objects.filter(parcel__farm=farm).select_related('parcel', 'crop_type')
+  crop_plans = CropPlan.objects.filter(parcel_polygon__parcel=parcel).select_related('parcel_polygon', 'crop_type')
   crop_types = CropType.objects.all()
   substances = Substance.objects.all()
 
   context = {
-    'farm': farm,
-    'parcels': parcels,
+    'parcel': parcel,
+    'parcel_polygons': parcel_polygons,
+    'farm': parcel.farm,
     'crop_plans': crop_plans,
     'crop_types': crop_types,
     'substances': substances,
     'API_KEY': getattr(settings, 'GOOGLE_MAP_API_KEY'),
-    'title': farm.name,
     'avg_lat': avg_lat,
     'avg_lng': avg_lng
   }
-  return render(request, "dashboard/farm-details.html", context)
+  return render(request, "pages/parcels/detail.html", context)
 
 @login_required(login_url='/users/signin/')
 def add_farm_manager(request, pk):
@@ -171,8 +226,8 @@ def add_farm_manager(request, pk):
   return redirect(request.META.get('HTTP_REFERER'))
 
 @login_required(login_url='/users/signin/')
-def save_parcel(request, pk):
-  farm = get_object_or_404(Farm, pk=pk)
+def save_parcel_polygon(request, pk):
+  parcel = get_object_or_404(Parcel, pk=pk)
 
   if request.method == "POST":
     polygon_data = request.POST.get("polygon")
@@ -180,20 +235,20 @@ def save_parcel(request, pk):
 
     if polygon_data:
       if parcel_id:
-        parcel = get_object_or_404(Parcel, id=parcel_id, farm=farm)
-        parcel.polygon = json.loads(polygon_data)
-        parcel.save()
+        parcel_polygon = get_object_or_404(ParcelPolygon, id=parcel_id, parcel=parcel)
+        parcel_polygon.polygon = json.loads(polygon_data)
+        parcel_polygon.save()
       else:
-        Parcel.objects.create(
-          farm=farm,
+        ParcelPolygon.objects.create(
+          parcel=parcel,
           polygon=json.loads(polygon_data)
         )
 
   return redirect(request.META.get('HTTP_REFERER'))
 
 @login_required(login_url='/users/signin/')
-def import_parcel(request, pk):
-  farm = get_object_or_404(Farm, pk=pk)
+def import_parcel_polygon(request, pk):
+  parcel = get_object_or_404(Parcel, pk=pk)
 
   if request.method == "POST":
     gpx_file = request.FILES['gpx_file']
@@ -203,32 +258,32 @@ def import_parcel(request, pk):
       for segment in track.segments:
         coords = [[point.latitude, point.longitude] for point in segment.points]
         if coords:
-          Parcel.objects.create(
-            farm=farm,
+          ParcelPolygon.objects.create(
+            parcel=parcel,
             polygon=coords
           )
 
   return redirect(request.META.get('HTTP_REFERER'))
 
 @login_required(login_url='/users/signin/')
-def delete_parcel(request, farm_id, parcel_id):
-  farm = get_object_or_404(Farm, pk=farm_id)
-  parcel = get_object_or_404(Parcel, pk=parcel_id, farm=farm)
+def delete_parcel_polygon(request, parcel_id, parcel_polygon_id):
+  parcel = get_object_or_404(Parcel, pk=parcel_id)
+  parcel_polygon = get_object_or_404(ParcelPolygon, pk=parcel_polygon_id, parcel=parcel)
 
-  parcel.delete()
+  parcel_polygon.delete()
 
   return redirect(request.META.get('HTTP_REFERER'))
 
 @login_required(login_url='/users/signin/')
-def create_crop_plan(request, parcel_id):
-  parcel = get_object_or_404(Parcel, id=parcel_id)
+def create_crop_plan(request, parcel_polygon_id):
+  parcel_polygon = get_object_or_404(ParcelPolygon, id=parcel_polygon_id)
 
   if request.method == "POST":
     crop_type = request.POST.get("crop_type")
     year = request.POST.get("year")
 
     CropPlan.objects.create(
-      parcel=parcel,
+      parcel_polygon=parcel_polygon,
       crop_type_id=crop_type,
       year=year
     )
@@ -254,8 +309,8 @@ def add_action(request, crop_plan_id):
   return redirect(request.META.get("HTTP_REFERER"))
 
 @login_required(login_url='/users/signin/')
-def parcel_plans(request, parcel_id):
-  plans = CropPlan.objects.filter(parcel_id=parcel_id).select_related("crop_type")
+def parcel_plans(request, parcel_polygon_id):
+  plans = CropPlan.objects.filter(parcel_polygon_id=parcel_polygon_id).select_related("crop_type")
   data = []
   for p in plans:
     actions = []

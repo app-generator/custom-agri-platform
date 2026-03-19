@@ -1,0 +1,367 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block extrastyle %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}&libraries=drawing"></script>
+
+<style>
+    #map {
+        height: 700px;
+        width: 100%;
+    }
+</style>
+{% endblock extrastyle %}
+
+{% block content %}
+
+    <div class="m-4">
+        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+
+            <div class="mb-5">
+                <form action="{% url "import_parcel_polygon" parcel.id %}" method="post" id="gpxUploadForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label class="cursor-pointer text-blue-600 text-sm">
+                        <span class="py-2 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                            Import
+                        </span>
+                        <input
+                            type="file"
+                            name="gpx_file"
+                            class="hidden"
+                            accept=".gpx"
+                            onchange="submitGpxForm(this)"
+                        />
+                    </label>
+                </form>
+            </div>
+
+            <div class="flex gap-4">
+
+                <div class="w-3/4">
+                    <div class="rounded-lg" id="map"></div>
+
+                    <form method="POST" action="{% url 'save_parcel_polygon' parcel.id %}" class="mt-4">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="polygon" id="polygonField">
+                        <input type="hidden" name="parcel_id" id="parcelIdField">
+
+                        <div class="flex items-center gap-3">
+                            <button type="submit" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                Save Parcel
+                            </button>
+                            <button type="button" id="deleteParcelBtn" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                Delete Selected Parcel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="w-1/4 bg-white border rounded p-4" id="parcelSidebar" style="display:none">
+
+                    <h3 class="text-lg font-semibold mb-3">Parcel</h3>
+
+                    <div id="parcelInfo"></div>
+
+                    <hr class="my-3">
+
+                    <h4 class="font-semibold mb-2">Create Crop Plan</h4>
+
+                    <form method="POST" id="cropPlanForm">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="parcel_id" id="sidebarParcelId">
+
+                        <div class="mb-2">
+                            <select name="crop_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                {% for crop in crop_types %}
+                                <option value="{{ crop.id }}">{{ crop.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-2">
+                            <input type="number" name="year" placeholder="Year" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        </div>
+
+                        <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-xs px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                            Create Plan
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <h4 class="font-semibold mb-2">Crop Plans</h4>
+
+                    <div id="parcelPlans"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="actionModal" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-4 rounded w-96 relative">
+                
+            <button id="closeActionModal" class="absolute top-2 right-4 text-gray-500 hover:text-gray-800">&times;</button>
+
+            <form method="POST" class="mt-6" id="actionForm">
+                {% csrf_token %}
+
+                <input type="hidden" name="crop_plan_id" id="actionPlanId">
+                <select name="action_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mb-2" id="actionType">
+                    <option value="SPRINKLE">Sprinkle</option>
+                    <option value="HARVEST">Harvest</option>
+                </select>
+
+                <select name="substance" id="substanceField" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mb-2">
+                    <option value="">Select Substance</option>
+                    {% for s in substances %}
+                        <option value="{{s.id}}">{{s.name}}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mb-2">
+
+                <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-xs px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
+            </form>
+        </div>
+    </div>
+
+    {{ parcel_polygons|json_script:"parcel-data" }}
+
+{% endblock content %}
+
+{% block extra_js %}
+
+<script>
+    let map;
+    let drawingManager;
+    let drawnPolygons = [];
+    let selectedPolygon = null;
+
+    function initMap() {
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: {{ avg_lat }}, lng: {{avg_lng}}},
+            zoom: 16,
+            mapTypeId: google.maps.MapTypeId.SATELLITE
+        });
+
+        drawingManager = new google.maps.drawing.DrawingManager({
+            drawingMode: google.maps.drawing.OverlayType.POLYGON,
+            drawingControl: true,
+            drawingControlOptions: {
+                position: google.maps.ControlPosition.TOP_CENTER,
+                drawingModes: ['polygon']
+            },
+            polygonOptions: {
+                editable: true,
+                draggable: true,
+                strokeColor: '#1565C0',
+                strokeOpacity: 0.9,
+                strokeWeight: 2,
+                fillColor: '#42A5F5',
+                fillOpacity: 0.3
+            }
+        });
+
+        drawingManager.setMap(map);
+
+        google.maps.event.addListener(drawingManager, 'overlaycomplete', function(e) {
+            const polygon = e.overlay;
+            polygon.parcelId = null;
+
+            drawnPolygons.push(polygon);
+
+            selectPolygon(polygon);
+            savePolygonCoords(polygon);
+
+            attachPolygonEvents(polygon);
+        });
+
+        loadSavedParcels();
+    }
+
+    function attachPolygonEvents(polygon){
+        google.maps.event.addListener(polygon, 'mousedown', function(e){
+            if(e.vertex !== undefined) return;
+            selectPolygon(polygon);
+        });
+
+        google.maps.event.addListener(polygon, 'dragend', function(){
+            selectPolygon(polygon);
+            savePolygonCoords(polygon);
+        });
+
+        google.maps.event.addListener(polygon.getPath(), 'set_at', function(){
+            selectPolygon(polygon);
+            savePolygonCoords(polygon);
+        });
+
+        google.maps.event.addListener(polygon.getPath(), 'insert_at', function(){
+            selectPolygon(polygon);
+            savePolygonCoords(polygon);
+        });
+    }
+
+    function loadSavedParcels() {
+        const parcelData = JSON.parse(
+            document.getElementById('parcel-data').textContent
+        );
+
+        parcelData.forEach(parcel => {
+
+            const coords = parcel.polygon.map(coord => ({
+                lat: coord[0],
+                lng: coord[1]
+            }));
+
+            const polygon = new google.maps.Polygon({
+                paths: coords,
+                strokeColor: '#1565C0',
+                strokeOpacity: 0.9,
+                strokeWeight: 2,
+                fillColor: '#42A5F5',
+                fillOpacity: 0.3,
+                editable: true,
+                draggable: true,
+                map: map
+            });
+
+            polygon.parcelId = parcel.id;
+            drawnPolygons.push(polygon);
+
+            attachPolygonEvents(polygon);
+        });
+    }
+
+    function selectPolygon(polygon) {
+        selectedPolygon = polygon;
+        const parcelId = polygon.parcelId || "";
+        document.getElementById("sidebarParcelId").value = parcelId;
+
+        if(parcelId){
+            document.getElementById("cropPlanForm").action = `/parcel/${parcelId}/crop-plan/create/`;
+        }
+
+        drawnPolygons.forEach(p => {
+            p.setOptions({ strokeColor: '#1565C0' });
+        });
+
+        polygon.setOptions({ strokeColor: '#FF0000' });
+        document.getElementById("parcelSidebar").style.display = "block";
+        document.getElementById("parcelInfo").innerHTML = "Parcel ID: " + (parcelId || "New Parcel");
+
+        if(parcelId){
+            loadParcelPlans(parcelId);
+        }
+    }
+
+    async function loadParcelPlans(parcelId) {
+        if (!parcelId) return;
+
+        const response = await fetch(`/parcel/${parcelId}/plans/`);
+        const plans = await response.json();
+
+        const container = document.getElementById("parcelPlans");
+
+        container.innerHTML = "";
+        plans.forEach(plan => {
+            let html = `
+            <div class="border rounded p-2 mb-2">
+            <div class="font-semibold">${plan.crop} ${plan.year}</div>
+            <ul class="text-sm mt-2">
+            `;
+
+            plan.actions.forEach(a => {
+                html += `
+                <li>
+                    ${a.type} ${a.substance ? "(" + a.substance + ")" : ""} - ${a.date}
+                </li>
+                `;
+            });
+
+            html += `
+            </ul>
+            <button onclick="openActionForm(${plan.id})"
+                class="mt-2 text-xs bg-green-600 text-white px-2 py-1 rounded">
+                Add Action
+            </button>
+            </div>
+            `;
+            container.innerHTML += html;
+        });
+    }
+
+    function openActionForm(planId){
+        document.getElementById("actionPlanId").value = planId;
+        document.getElementById("actionForm").action = `/crop-plan/${planId}/action/add/`;
+
+        document.getElementById("actionModal").style.display = "flex";
+    }
+
+    function savePolygonCoords(polygon) {
+        const coords = polygon.getPath().getArray().map(latlng => [
+            latlng.lat(),
+            latlng.lng()
+        ]);
+
+        document.getElementById('polygonField').value = JSON.stringify(coords);
+    }
+
+    window.onload = initMap;
+</script>
+
+<script>
+    document.getElementById("actionType").addEventListener("change", function(){
+        const field = document.getElementById("substanceField");
+        if(this.value === "HARVEST"){
+            field.style.display = "none";
+        }else{
+            field.style.display = "block";
+        }
+    });
+</script>
+
+<script>
+    document.getElementById('deleteParcelBtn').addEventListener('click', function() {
+        if (!selectedPolygon) {
+            alert("Please select a parcel first.");
+            return;
+        }
+
+        if (!selectedPolygon.parcelId) {
+            selectedPolygon.setMap(null);
+            selectedPolygon = null;
+            return;
+        }
+
+        if (!confirm("Are you sure you want to delete this parcel?")) {
+            return;
+        }
+
+        window.location.href = `/farm/{{ parcel.id }}/parcel/${selectedPolygon.parcelId}/delete/`;
+    });
+</script>
+
+<script>
+    document.getElementById("closeActionModal").addEventListener("click", function() {
+        document.getElementById("actionModal").style.display = "none";
+    });
+
+    document.getElementById("actionModal").addEventListener("click", function(e) {
+        if(e.target === this){
+            this.style.display = "none";
+        }
+    });
+</script>
+
+<script>
+    function submitGpxForm(input){
+        if(input.files.length > 0){
+            document.getElementById('gpxUploadForm').submit();
+        }
+    }
+</script>
+
+{% endblock extra_js %}

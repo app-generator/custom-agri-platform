@@ -14,6 +14,7 @@ urlpatterns = [
     path("farm/<int:pk>/", views.farm_details, name="farm_details"),
     path("add-farm-manager/<int:pk>/", views.add_farm_manager, name="add_farm_manager"),
     path('farm/<int:pk>/save-parcel/', views.save_parcel, name='save_parcel'),
+    path('farm/<int:pk>/import-parcel/', views.import_parcel, name='import_parcel'),
     path('farm/<int:farm_id>/parcel/<int:parcel_id>/delete/', views.delete_parcel, name='delete_parcel'),
 
     path("parcel/<int:parcel_id>/crop-plan/create/", views.create_crop_plan, name="create_crop_plan"),
@@ -63,6 +64,9 @@ urlpatterns = [
 
     path("tab/<int:pk>/download-csv/", views.download_tab_csv, name="download_tab_csv"),
     path("asset/<int:row_id>/download/", views.download_asset, name="download_asset"),
+    path("files/<int:pk>/", views.row_files, name="row_files"),
+    path("upload-file/<int:pk>/", views.upload_file, name="upload_file"),
+    path("delete-file/<int:pk>/", views.delete_file, name="delete_file"),
 
     path("add-data/<int:pk>/", views.add_data, name="add_data"),
 ]

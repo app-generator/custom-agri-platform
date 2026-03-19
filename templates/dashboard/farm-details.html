@@ -17,6 +17,24 @@
     <div class="m-4">
         <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
 
+            <div class="mb-5">
+                <form action="{% url "import_parcel" farm.id %}" method="post" id="gpxUploadForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label class="cursor-pointer text-blue-600 text-sm">
+                        <span class="py-2 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                            Import
+                        </span>
+                        <input
+                            type="file"
+                            name="gpx_file"
+                            class="hidden"
+                            accept=".gpx"
+                            onchange="submitGpxForm(this)"
+                        />
+                    </label>
+                </form>
+            </div>
+
             <div class="flex gap-4">
 
                 <div class="w-3/4">
@@ -124,8 +142,8 @@
     function initMap() {
 
         map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: 51.30, lng: 0.7},
-            zoom: 14,
+            center: {lat: {{ avg_lat }}, lng: {{avg_lng}}},
+            zoom: 16,
             mapTypeId: google.maps.MapTypeId.SATELLITE
         });
 
@@ -336,6 +354,14 @@
             this.style.display = "none";
         }
     });
+</script>
+
+<script>
+    function submitGpxForm(input){
+        if(input.files.length > 0){
+            document.getElementById('gpxUploadForm').submit();
+        }
+    }
 </script>
 
 {% endblock extra_js %}

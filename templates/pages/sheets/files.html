@@ -1,0 +1,178 @@
+{% extends "layouts/base.html" %}
+{% load static custom_tags file_extension %}
+
+{% block content %}
+
+    <div class="m-4">
+        <div class="px-4 pt-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+            {% if files %}
+            <div class="flex justify-end mb-5">
+                <form action="{% url "upload_file" row.id %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label class="cursor-pointer text-blue-600 text-sm">
+                        <span class="py-2 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                            File +
+                        </span>
+                        <input
+                            type="file"
+                            name="file"
+                            class="hidden"
+                            accept=".pdf,.jpg,.png,.jpeg,.txt"
+                            onchange="previewAndSubmit(this)"
+                        />
+                    </label>
+                </form>
+            </div>
+            <div class="relative overflow-x-auto">
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">
+                                Filename
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                {{ file.filename }}
+                            </th>
+                            <td class="px-6 py-4">
+                                <button 
+                                    type="button" 
+                                    data-modal-target="file-{{file.id}}" data-modal-toggle="file-{{file.id}}"
+                                    class="py-2 px-3 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">View</button>
+                            </td>
+                            <td class="px-6 py-4">
+                                <button type="button" data-modal-target="delete-file-{{ file.id }}" data-modal-toggle="delete-file-{{ file.id }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Preview modal -->
+                        <div id="file-{{file.id}}" tabindex="-1" aria-hidden="true" class="hidden overflow-auto fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                            <div class="relative p-4 w-full max-w-5xl max-h-full">
+                                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                                    <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                        <div>
+                                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                                {{ file.filename }}
+                                            </h3>
+                                        </div>
+                                        <div>
+                                            <a href="{% url "download_asset" file.id %}">
+                                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+                                                    <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+                                                </svg>
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="file-{{file.id}}">
+                                                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                                </svg>
+                                                <span class="sr-only">Close modal</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 md:p-5 space-y-4 overflow-auto">
+                                        {% if file.filename|file_extension in ".jpg, .png, .gif" %}
+                                            <img class="w-full h-auto" src="/media/{{ file.file }}" alt="df">
+                                        {% elif file.filename|file_extension in ".mp4, .webm, .ogg" %}
+                                            <video class="w-full" height="700" controls>
+                                                <source src="/media/{{ file.file }}" type="video/mp4">
+                                            </video>
+                                        {% elif file.filename|file_extension in ".pdf, .txt" %}
+                                            <iframe src="/media/{{ file.file }}" width="100%" height="700px"></iframe>
+                                        {% elif file.filename|file_extension in ".csv" %}
+                                            <pre class="bg-dark text-white p-3 ">{{ file.csv_text }}</pre>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delete tab Modal -->
+                        <div class="fixed left-0 right-0 z-50 items-center justify-center hidden overflow-x-hidden overflow-y-auto top-4 md:inset-0 h-modal sm:h-full" id="delete-file-{{ file.id }}">
+                            <div class="relative w-full h-full max-w-md px-4 md:h-auto">
+                                <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
+                                    <div class="flex justify-end p-2">
+                                        <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white" data-modal-toggle="delete-file-{{ file.id }}">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="p-6 pt-0 text-center">
+                                        <svg class="w-16 h-16 mx-auto text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <h3 class="mt-5 mb-6 text-lg text-gray-500 dark:text-gray-400">Are you sure you want to delete?</h3>
+                                        <a href="{% url "delete_file" file.id %}" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-base inline-flex items-center px-3 py-2.5 text-center mr-2 dark:focus:ring-red-800">
+                                            Yes, I'm sure
+                                        </a>
+                                        <a href="#" class="text-gray-900 bg-white hover:bg-gray-100 focus:ring-4 focus:ring-primary-300 border border-gray-200 font-medium inline-flex items-center rounded-lg text-base px-3 py-2.5 text-center dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700" data-modal-toggle="delete-file-{{ file.id }}">
+                                            No, cancel
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="flex items-center justify-center">
+                <div class="flex items-center justify-center w-full h-64 my-8">
+                    <div>
+                        <p class="text-gray-600 mb-5 text-center">No files found</p>
+                        <form class="flex justify-center" action="{% url "upload_file" row.id %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <label class="cursor-pointer text-blue-600 text-sm">
+                                <span class="py-2 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-dashed border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                    Add new File
+                                </span>
+                                <input
+                                    type="file"
+                                    name="file"
+                                    class="hidden"
+                                    accept=".pdf,.jpg,.png,.jpeg,.txt"
+                                    onchange="previewAndSubmit(this)"
+                                />
+                            </label>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block extra_js %}
+
+<script>
+    function previewAndSubmit(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            console.log("Selected file:", file.name);
+        }
+
+        input.closest('form').submit();
+    }
+</script>
+
+{% endblock extra_js %}

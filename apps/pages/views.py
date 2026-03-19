@@ -1,4 +1,5 @@
 import json
+import gpxpy
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -121,6 +122,17 @@ def farm_details(request, pk):
   parcels_qs = Parcel.objects.filter(farm=farm)
   parcels = list(parcels_qs.values('id', 'polygon'))
 
+  all_coords = []
+  for parcel in parcels:
+    polygon = parcel['polygon']
+    all_coords.extend(polygon)
+
+  if all_coords:
+    avg_lat = sum(coord[0] for coord in all_coords) / len(all_coords)
+    avg_lng = sum(coord[1] for coord in all_coords) / len(all_coords)
+  else:
+    avg_lat, avg_lng = 51.30, 0.7
+
   crop_plans = CropPlan.objects.filter(parcel__farm=farm).select_related('parcel', 'crop_type')
   crop_types = CropType.objects.all()
   substances = Substance.objects.all()
@@ -132,7 +144,9 @@ def farm_details(request, pk):
     'crop_types': crop_types,
     'substances': substances,
     'API_KEY': getattr(settings, 'GOOGLE_MAP_API_KEY'),
-    'title': farm.name
+    'title': farm.name,
+    'avg_lat': avg_lat,
+    'avg_lng': avg_lng
   }
   return render(request, "dashboard/farm-details.html", context)
 
@@ -174,6 +188,25 @@ def save_parcel(request, pk):
           farm=farm,
           polygon=json.loads(polygon_data)
         )
+
+  return redirect(request.META.get('HTTP_REFERER'))
+
+@login_required(login_url='/users/signin/')
+def import_parcel(request, pk):
+  farm = get_object_or_404(Farm, pk=pk)
+
+  if request.method == "POST":
+    gpx_file = request.FILES['gpx_file']
+    gpx = gpxpy.parse(gpx_file.read().decode('utf-8'))
+
+    for track in gpx.tracks:
+      for segment in track.segments:
+        coords = [[point.latitude, point.longitude] for point in segment.points]
+        if coords:
+          Parcel.objects.create(
+            farm=farm,
+            polygon=coords
+          )
 
   return redirect(request.META.get('HTTP_REFERER'))
 
@@ -593,6 +626,36 @@ def tab_details(request, pk):
     'types': FieldType.choices
   }
   return render(request, 'pages/sheets/details.html', context)
+
+def row_files(request, pk):
+  row = get_object_or_404(TabRow, pk=pk)
+  files = Asset.objects.filter(user=request.user, row=row)
+
+  context = {
+    'segment': 'certification',
+    'row': row,
+    'files': files
+  }
+  return render(request, 'pages/sheets/files.html', context)
+
+
+def upload_file(request, pk):
+  row = get_object_or_404(TabRow, pk=pk)
+  if request.method == "POST":
+    file = request.FILES.get('file')
+    Asset.objects.create(
+      user=request.user,
+      file=file,
+      row=row
+    )
+    return redirect(request.META.get('HTTP_REFERER'))
+
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def delete_file(request, pk):
+  file = get_object_or_404(Asset, pk=pk)
+  file.delete()
+  return redirect(request.META.get('HTTP_REFERER'))
 
 import csv, os
 from django.http import HttpResponse, FileResponse, Http404

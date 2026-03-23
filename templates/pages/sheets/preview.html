@@ -1,0 +1,206 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="m-4">
+    <div class="bg-white border border-gray-200 rounded-t-lg shadow-sm">
+
+        <div class="p-6 min-h-[600px] overflow-auto relative">
+
+            <div class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4 text-sm">
+                Preview Mode – Data is not saved yet. Click <b>Save</b> to persist all sheets.
+            </div>
+
+            <form method="POST" action="{% url 'save_xlsx_to_db' %}">
+                {% csrf_token %}
+
+                <div class="flex justify-end gap-2 mb-3">
+
+                    <button
+                        type="button"
+                        onclick="addRow()"
+                        class="text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-md text-xs px-4 py-2">
+                        Row +
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="text-white bg-green-700 hover:bg-green-800 font-medium rounded-md text-xs px-4 py-2">
+                        Save All Sheets
+                    </button>
+                </div>
+
+                <div class="relative overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500 border border-gray-300 border-collapse">
+                        <thead class="text-xs text-gray-700">
+                            <tr>
+                                <th class="px-4"></th>
+
+                                {% for field in fields %}
+                                <th class="border border-gray-300">
+                                    <input
+                                        type="text"
+                                        name="field_names[{{ forloop.counter0 }}]"
+                                        value="{{ field }}"
+                                        class="w-full p-2 border-0 font-semibold text-gray-800 focus:ring-0"
+                                    />
+                                </th>
+                                {% endfor %}
+
+                                <th class="border border-gray-300 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            {% for row in rows %}
+                            <tr>
+                                <td class="border border-gray-300 text-center">
+                                    {{ forloop.counter }}
+                                </td>
+
+                                {% for cell in row %}
+                                <td class="border border-gray-300">
+                                    <input
+                                        type="text"
+                                        name="data[{{ forloop.parentloop.counter0 }}][{{ forloop.counter0 }}]"
+                                        value="{{ cell }}"
+                                        class="w-full p-2 border-0 focus:ring-0"
+                                    />
+                                </td>
+                                {% endfor %}
+
+                                <td class="border border-gray-300 text-center">
+                                    <button
+                                        type="button"
+                                        onclick="deleteRow(this)"
+                                        class="text-red-600 text-sm">
+                                        ✕
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="flex border-t border-gray-200 bg-gray-100">
+            {% for tab in tabs %}
+                <div class="flex items-center border-r border-gray-200 last:border-r-0">
+                    <a href="?sheet={{ tab }}"
+                    onclick="switchTab(event, '?sheet={{ tab }}')"
+                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 
+                    {% if tab == active_tab %}bg-white{% endif %}">
+                        {{ tab }}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+
+{% block extra_js %}
+
+<script>
+    let rowIndex = {{ rows|length }}
+
+    function updateSerials(){
+        const rows = document.querySelectorAll("#table-body tr")
+        rows.forEach((tr, index) => {
+            tr.children[0].innerText = index + 1
+        })
+    }
+
+    function deleteRow(button){
+        const tr = button.closest("tr")
+        tr.remove()
+        updateSerials()
+    }
+
+    function addRow(){
+        const tbody = document.getElementById("table-body")
+        const tr = document.createElement("tr")
+
+        const serialTd = document.createElement("td")
+        serialTd.className = "border border-gray-300 text-center"
+        tr.appendChild(serialTd)
+
+        const fieldCount = {{ fields|length }}
+
+        for(let i = 0; i < fieldCount; i++){
+            const td = document.createElement("td")
+            td.className = "border border-gray-300"
+
+            const input = document.createElement("input")
+            input.type = "text"
+            input.name = `data[new${rowIndex}][${i}]`
+            input.className = "w-full p-2 border-0 focus:ring-0"
+
+            td.appendChild(input)
+            tr.appendChild(td)
+        }
+
+        const actionTd = document.createElement("td")
+        actionTd.className = "border border-gray-300 text-center"
+
+        const btn = document.createElement("button")
+        btn.type = "button"
+        btn.innerHTML = "✕"
+        btn.className = "text-red-600 text-sm"
+        btn.onclick = function(){ deleteRow(btn) }
+
+        actionTd.appendChild(btn)
+        tr.appendChild(actionTd)
+
+        tbody.appendChild(tr)
+
+        rowIndex++
+        updateSerials()
+    }
+
+    function collectSheetData() {
+        const fields = [];
+        document.querySelectorAll('input[name^="field_names["]').forEach(input => {
+            fields.push(input.value);
+        });
+
+        const rows = [];
+        document.querySelectorAll("#table-body tr").forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('input[type="text"]').forEach(input => {
+                row.push(input.value);
+            });
+            rows.push(row);
+        });
+
+        return { fields, rows };
+    }
+
+    async function switchTab(event, tabUrl) {
+        event.preventDefault();
+
+        const data = collectSheetData();
+
+        await fetch("{% url 'update_xlsx_session_sheet' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify(data)
+        });
+
+        window.location.href = tabUrl;
+    }
+
+    updateSerials()
+</script>
+
+{% endblock extra_js %}

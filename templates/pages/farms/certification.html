@@ -7,13 +7,13 @@
         <div class="px-4 pt-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
             <div class="mb-5 flex justify-between items-center">
                 <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Sheets</h1>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
                     <form action="{% url "upload_xlsx_preview" %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         <label class="cursor-pointer text-blue-600 text-sm">
                             <span class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-                                Import Sheet
+                                Import
                             </span>
                             <input
                                 type="file"
@@ -24,7 +24,7 @@
                             />
                         </label>
                     </form>
-                    <button type="button" data-modal-target="add-sheet-modal" data-modal-toggle="add-sheet-modal" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Add new Sheet</button>
+                    <button type="button" data-modal-target="add-sheet-modal" data-modal-toggle="add-sheet-modal" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Sheet +</button>
                 </div>
             </div>
 
@@ -44,14 +44,9 @@
                         {% for sheet in sheets %}
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ sheet.name }}
+                                <a class="underline text-blue-700" href="{% url "tab_details" sheet|get_first_tab %}">{{ sheet.name }}</a>
                             </th>
                             <td class="px-6 py-4">
-                                <a href="{% url "tab_details" sheet|get_first_tab %}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
-                                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                                        <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm9.408-5.5a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2h-.01ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2h-1v-4a1 1 0 0 0-1-1h-2Z" clip-rule="evenodd"/>
-                                    </svg>
-                                </a>
                                 <button type="button" data-modal-target="edit-tab-modal-{{ sheet.id }}" data-modal-toggle="edit-tab-modal-{{ sheet.id }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>
@@ -86,8 +81,8 @@
     
                                             <div class="grid grid-cols-6 gap-6 mb-5">
                                                 <div class="col-span-6">
-                                                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tab Name</label>
-                                                    <input type="text" value="{{ sheet.name }}" name="name" id="name" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Tab Name" required>
+                                                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+                                                    <input type="text" value="{{ sheet.name }}" name="name" id="name" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Name" required>
                                                 </div>
                                             </div>
     
@@ -173,7 +168,7 @@
         </div>
     </div>
 
-    <!-- Add farm Modal -->
+    <!-- Add sheet Modal -->
     <div class="fixed left-0 right-0 z-50 items-center justify-center hidden overflow-x-hidden overflow-y-auto top-4 md:inset-0 h-modal sm:h-full" id="add-sheet-modal">
         <div class="relative w-full h-full max-w-2xl px-4 md:h-auto">
             <form method="post" action="#" class="relative bg-white rounded-lg shadow dark:bg-gray-800">
@@ -192,8 +187,8 @@
                 <div class="p-6 space-y-6">
                     <div class="grid grid-cols-6 gap-6">
                         <div class="col-span-6">
-                            <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Farm Name</label>
-                            <input type="text" name="name" id="name" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Farm Name" required>
+                            <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+                            <input type="text" name="name" id="name" class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Name" required>
                         </div>
                     </div>
                 </div>

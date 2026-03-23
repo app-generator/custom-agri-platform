@@ -974,3 +974,186 @@ def send_request(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
   return redirect(request.META.get('HTTP_REFERER'))
+
+
+# Preivew
+import openpyxl
+import xlrd
+from zipfile import BadZipFile
+
+def upload_xlsx_preview(request):
+  if request.method == "POST" and request.FILES.get("file"):
+    file = request.FILES["file"]
+    filename = file.name.lower()
+
+    preview_data = {}
+
+    try:
+      if filename.endswith(".xlsx"):
+        wb = openpyxl.load_workbook(file, data_only=True)
+
+        for sheet_name in wb.sheetnames:
+          ws = wb[sheet_name]
+          rows = list(ws.iter_rows(values_only=True))
+
+          if not rows:
+            continue
+
+          headers = [str(h) for h in rows[0]]
+
+          preview_data[sheet_name] = {
+            "fields": headers,
+            "rows": [
+              [str(cell) if cell is not None else "" for cell in row]
+              for row in rows[1:]
+            ]
+          }
+
+      elif filename.endswith(".xls"):
+        wb = xlrd.open_workbook(file_contents=file.read())
+
+        for sheet in wb.sheets():
+          rows = []
+
+          for row_idx in range(sheet.nrows):
+            rows.append(sheet.row_values(row_idx))
+
+          if not rows:
+            continue
+
+          headers = [str(h) for h in rows[0]]
+
+          preview_data[sheet.name] = {
+            "fields": headers,
+            "rows": [
+              [str(cell) if cell is not None else "" for cell in row]
+              for row in rows[1:]
+            ]
+          }
+
+      else:
+        messages.error(request, "Only .xls and .xlsx files are supported.")
+        return redirect(request.META.get('HTTP_REFERER'))
+
+    except BadZipFile:
+      messages.error(request, "Invalid .xlsx file.")
+      return redirect(request.META.get('HTTP_REFERER'))
+
+    except Exception as e:
+      messages.error(request, f"Error processing file: {str(e)}")
+      return redirect(request.META.get('HTTP_REFERER'))
+
+    if not preview_data:
+      messages.error(request, "No data found in file.")
+      return redirect(request.META.get('HTTP_REFERER'))
+
+    request.session["xlsx_preview"] = preview_data
+    request.session["active_sheet"] = list(preview_data.keys())[0]
+    request.session["xlsx_file_name"] = file.name.rsplit(".", 1)[0]
+
+    return redirect(reverse("xlsx_preview_page"))
+
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def xlsx_preview_page(request):
+  preview = request.session.get("xlsx_preview")
+  active_sheet = request.GET.get("sheet") or request.session.get("active_sheet")
+
+  if not preview:
+    return redirect(request.META.get('HTTP_REFERER'))
+
+  if active_sheet not in preview:
+    active_sheet = list(preview.keys())[0]
+
+  request.session["active_sheet"] = active_sheet
+
+  context = {
+    "tabs": preview.keys(),
+    "active_tab": active_sheet,
+    "fields": preview[active_sheet]["fields"],
+    "rows": preview[active_sheet]["rows"],
+  }
+
+  return render(request, "pages/sheets/preview.html", context)
+
+def save_xlsx_to_db(request):
+  preview_data = request.session.get("xlsx_preview")
+  file_name = request.session.get("xlsx_file_name")
+
+  if not preview_data:
+    return redirect(request.META.get('HTTP_REFERER'))
+
+  field_names = {}
+  for key, value in request.POST.items():
+    if key.startswith("field_names["):
+      index = int(key[len("field_names["):-1])
+      field_names[index] = value.strip()
+
+  fields = [field_names[i] for i in sorted(field_names.keys())]
+
+  rows_dict = {}
+  for key, value in request.POST.items():
+    if key.startswith("data["):
+      parts = key[len("data["):-1].split("][")
+      row_key, col_index = parts[0], int(parts[1])
+      if row_key not in rows_dict:
+        rows_dict[row_key] = {}
+
+      rows_dict[row_key][col_index] = value
+
+  rows = []
+  for row_key in rows_dict:
+    col_map = rows_dict[row_key]
+    row = [col_map.get(i, "") for i in range(len(fields))]
+    rows.append(row)
+
+  active_sheet = request.session.get("active_sheet")
+  sheet = Sheet.objects.create(name=file_name)
+
+  for sheet_name, data in preview_data.items():
+    if sheet_name == active_sheet:
+      sheet_fields = fields
+      sheet_rows = rows
+    else:
+      sheet_fields = data["fields"]
+      sheet_rows = data["rows"]
+
+    tab = Tab.objects.create(name=sheet_name, sheet=sheet)
+
+    field_map = {}
+    for field_name in sheet_fields:
+      field = TabFields.objects.create(tab=tab, name=field_name, type="STRING")
+      field_map[field_name] = field
+
+    for row_index, row_values in enumerate(sheet_rows, start=1):
+      tab_row = TabRow.objects.create(tab=tab, row_index=row_index)
+      for col_name, value in zip(sheet_fields, row_values):
+        TabCell.objects.create(row=tab_row, field=field_map[col_name], value=value)
+
+  del request.session["xlsx_preview"]
+  del request.session["xlsx_file_name"]
+
+  first_tab = Tab.objects.filter(sheet=sheet).first()
+  return redirect("tab_details", pk=first_tab.id)
+
+def update_xlsx_session_sheet(request):
+  if request.method == "POST":
+    preview_data = request.session.get("xlsx_preview")
+    active_sheet = request.session.get("active_sheet")
+
+    if not preview_data or not active_sheet:
+        return JsonResponse({"status": "error"}, status=400)
+
+    body = json.loads(request.body)
+    fields = body.get("fields", [])
+    rows = body.get("rows", [])
+
+    preview_data[active_sheet]["fields"] = fields
+    preview_data[active_sheet]["rows"] = rows
+
+    request.session["xlsx_preview"] = preview_data
+    request.session.modified = True
+
+    return JsonResponse({"status": "ok"})
+
+  return JsonResponse({"status": "error"}, status=405)

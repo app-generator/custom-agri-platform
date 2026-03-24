@@ -36,10 +36,7 @@ def dashboard(request):
 
 @login_required(login_url='/users/signin/')
 def farms(request):
-  farms = Farm.objects.filter(
-    farm_role__user=request.user,
-    farm_role__active=True
-  ).distinct()
+  farms = Farm.objects.filter(created_by=request.user)
 
   context = {
     'segment': 'farms',
@@ -64,7 +61,8 @@ def create_farm(request):
       name=name,
       address=address,
       lat=lat,
-      lon=lon
+      lon=lon,
+      created_by=request.user
     )
     farm.tags.set(tags)
 

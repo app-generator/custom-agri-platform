@@ -62,7 +62,7 @@ urlpatterns = [
     path("tab/<int:pk>/", views.tab_details, name="tab_details"),
     path("xlsx-preview/", views.xlsx_preview_page, name="xlsx_preview_page"),
     path("save-xlsx/", views.save_xlsx_to_db, name="save_xlsx_to_db"),
-    path("upload_xlsx_preview/", views.upload_xlsx_preview, name="upload_xlsx_preview"),
+    # path("upload_xlsx_preview/", views.upload_xlsx_preview, name="upload_xlsx_preview"),
     path("xlsx/update-session-sheet/", views.update_xlsx_session_sheet, name="update_xlsx_session_sheet"),
 
 

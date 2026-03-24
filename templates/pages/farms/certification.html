@@ -8,7 +8,7 @@
             <div class="mb-5 flex justify-between items-center">
                 <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Sheets</h1>
                 <div class="flex items-center gap-2">
-                    <form action="{% url "upload_xlsx_preview" %}" method="post" enctype="multipart/form-data">
+                    {% comment %} <form action="{% url "upload_xlsx_preview" %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         <label class="cursor-pointer text-blue-600 text-sm">
@@ -23,7 +23,7 @@
                                 onchange="previewAndSubmit(this)"
                             />
                         </label>
-                    </form>
+                    </form> {% endcomment %}
                     <button type="button" data-modal-target="add-sheet-modal" data-modal-toggle="add-sheet-modal" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Sheet +</button>
                 </div>
             </div>
@@ -35,7 +35,7 @@
                             <th scope="col" class="px-6 py-3">
                                 Name
                             </th>
-                            <th scope="col" class="px-6 py-3">
+                            <th scope="col" class="px-6 py-3 text-end">
                                 Action
                             </th>
                         </tr>
@@ -46,7 +46,7 @@
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 <a class="underline text-blue-700" href="{% url "tab_details" sheet|get_first_tab %}">{{ sheet.name }}</a>
                             </th>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 text-end">
                                 <button type="button" data-modal-target="edit-tab-modal-{{ sheet.id }}" data-modal-toggle="edit-tab-modal-{{ sheet.id }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>

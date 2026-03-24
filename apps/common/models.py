@@ -46,15 +46,11 @@ class Parcel(BaseModel):
     info = models.TextField(null=True, blank=True)
     culture = models.TextField(null=True, blank=True)
 
-    def __str__(self):
-        return self.name
 
 class ParcelPolygon(BaseModel):
     parcel = models.ForeignKey(Parcel, on_delete=models.CASCADE)
     polygon = models.JSONField()
 
-    def __str__(self):
-        return f"{self.parcel.name} polygon"
 
 class CropType(BaseModel):
     name = models.CharField(max_length=100)

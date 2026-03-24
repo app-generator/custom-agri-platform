@@ -1,5 +1,11 @@
 import json
 import gpxpy
+
+import zipfile
+import shapefile
+import tempfile
+import os
+
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -251,17 +257,83 @@ def import_parcel_polygon(request, pk):
   parcel = get_object_or_404(Parcel, pk=pk)
 
   if request.method == "POST":
-    gpx_file = request.FILES['gpx_file']
-    gpx = gpxpy.parse(gpx_file.read().decode('utf-8'))
+    uploaded_file = request.FILES['file']
+    filename = uploaded_file.name.lower()
 
-    for track in gpx.tracks:
-      for segment in track.segments:
-        coords = [[point.latitude, point.longitude] for point in segment.points]
-        if coords:
-          ParcelPolygon.objects.create(
-            parcel=parcel,
-            polygon=coords
+    if filename.endswith(".gpx"):
+      gpx = gpxpy.parse(uploaded_file.read().decode('utf-8'))
+
+      for track in gpx.tracks:
+        for segment in track.segments:
+          coords = [[p.latitude, p.longitude] for p in segment.points]
+          if coords:
+            ParcelPolygon.objects.create(parcel=parcel, polygon=coords)
+
+    elif filename.endswith(".zip"):
+      with tempfile.TemporaryDirectory() as tmpdir:
+        zip_path = os.path.join(tmpdir, uploaded_file.name)
+
+        with open(zip_path, 'wb+') as f:
+          for chunk in uploaded_file.chunks():
+            f.write(chunk)
+
+        with zipfile.ZipFile(zip_path, 'r') as z:
+          z.extractall(tmpdir)
+
+        shp_path = None
+
+        for root, dirs, files in os.walk(tmpdir):
+          for file in files:
+            if file.lower().endswith(".shp"):
+              base = os.path.splitext(file)[0]
+
+              shp = os.path.join(root, base + ".shp")
+              shx = os.path.join(root, base + ".shx")
+              dbf = os.path.join(root, base + ".dbf")
+
+              if os.path.exists(shp) and os.path.exists(shx) and os.path.exists(dbf):
+                shp_path = shp
+                shx_path = shx
+                dbf_path = dbf
+                break
+          if shp_path:
+            break
+
+        if not shp_path:
+          raise ValueError("Valid shapefile not found")
+
+        with open(shp_path, "rb") as shp_f, \
+            open(shx_path, "rb") as shx_f, \
+            open(dbf_path, "rb") as dbf_f:
+
+          sf = shapefile.Reader(
+            shp=shp_f,
+            shx=shx_f,
+            dbf=dbf_f
           )
+
+          for shape in sf.shapes():
+            if len(shape.parts) > 1:
+              for i in range(len(shape.parts)):
+                start = shape.parts[i]
+                end = shape.parts[i + 1] if i + 1 < len(shape.parts) else len(shape.points)
+                part = shape.points[start:end]
+
+                coords = [[lat, lon] for lon, lat in part]
+                if coords:
+                  ParcelPolygon.objects.create(
+                    parcel=parcel,
+                    polygon=coords
+                  )
+            else:
+              coords = [[lat, lon] for lon, lat in shape.points]
+              if coords:
+                ParcelPolygon.objects.create(
+                  parcel=parcel,
+                  polygon=coords
+                )
+    else:
+        raise ValueError("Unsupported file format")
 
   return redirect(request.META.get('HTTP_REFERER'))
 

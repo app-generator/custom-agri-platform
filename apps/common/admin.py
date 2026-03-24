@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.common.models import Sheet, Tab, TabFields, TabRow, TabCell, Tag, Farm, Role, Invitation, CropType, Substance
+from apps.common.models import Sheet, Tab, TabFields, TabRow, TabCell, Tag, Farm, Role, Invitation, CropType, Substance, ParcelPolygon
 from django.apps import apps
 from django.contrib import admin
 
@@ -39,3 +39,5 @@ admin.site.register(TabCell)
 
 admin.site.register(CropType)
 admin.site.register(Substance)
+
+admin.site.register(ParcelPolygon)

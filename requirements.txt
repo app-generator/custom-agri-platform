@@ -41,3 +41,4 @@ psycopg2-binary
 gpxpy
 openpyxl
 xlrd
+pyshp

@@ -765,22 +765,38 @@ def row_files(request, pk):
 
 
 def upload_file(request, pk):
-  row = get_object_or_404(TabRow, pk=pk)
-  if request.method == "POST":
-    file = request.FILES.get('file')
-    Asset.objects.create(
-      user=request.user,
-      file=file,
-      row=row
-    )
-    return redirect(request.META.get('HTTP_REFERER'))
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
-  return redirect(request.META.get('HTTP_REFERER'))
+  if not request.user.is_authenticated:
+    return JsonResponse({"error": "Unauthorized"}, status=401)
+
+  row = get_object_or_404(TabRow, pk=pk)
+
+  file = request.FILES.get('file')
+  if not file:
+    return JsonResponse({"error": "No file provided"}, status=400)
+
+  asset = Asset.objects.create(
+    user=request.user,
+    file=file,
+    row=row
+  )
+
+  return JsonResponse({
+    "status": "success",
+    "id": asset.id,
+    "filename": asset.file.name,
+    "url": asset.file.url,
+  })
 
 def delete_file(request, pk):
-  file = get_object_or_404(Asset, pk=pk)
-  file.delete()
-  return redirect(request.META.get('HTTP_REFERER'))
+  if request.method == "POST":
+    asset = get_object_or_404(Asset, pk=pk, user=request.user)
+    asset.delete()
+    return JsonResponse({"status": "deleted"})
+
+  return JsonResponse({"error": "Invalid request"}, status=400)
 
 import csv, os
 from django.http import HttpResponse, FileResponse, Http404

@@ -160,13 +160,109 @@
                                         />
                                     </td>
                                     {% endfor %}
-                                    <td class="border border-gray-300 px-4">
-                                        <a class="" href="{% url "row_files" row.id %}">
-                                            <svg class="w-4 h-4 text-blue-700" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                                                <path fill-rule="evenodd" d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-7Z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </a>
+
+                                    <td class="border border-gray-300 px-2">
+                                        <div class="flex items-center gap-2">
+
+                                            <label class="cursor-pointer text-blue-600 text-sm">
+                                                <svg class="w-4 h-4 text-blue-700" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/>
+                                                </svg>
+
+                                                <input
+                                                    type="file"
+                                                    name="file[row{{row.id}}]"
+                                                    class="hidden"
+                                                    accept=".pdf,.jpg,.png,.jpeg,.txt"
+                                                    data-upload-url="{% url 'upload_file' row.id %}"
+                                                    onchange="uploadFile(this)"
+                                                />
+                                            </label>
+
+                                            {% if request.user|get_files:row %}
+                                                <svg 
+                                                    data-modal-target="file-{{row.id}}" data-modal-toggle="file-{{row.id}}"
+                                                    class="w-4 h-4 text-green-700 cursor-pointer" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/>
+                                                    <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                                                </svg>
+
+                                                <!-- Preview modal -->
+                                                <div id="file-{{row.id}}" tabindex="-1" aria-hidden="true" class="hidden overflow-auto fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                                                    <div class="p-1 w-full max-w-5xl max-h-full">
+                                                        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                                                            <button type="button" class="absolute top-2 right-2 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="file-{{row.id}}">
+                                                                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                                                </svg>
+                                                                <span class="sr-only">Close modal</span>
+                                                            </button>
+                                                            <div class="overflow-auto">
+                                                                <div class="border-b border-gray-200 dark:border-gray-700">
+                                                                    <ul
+                                                                        class="flex flex-wrap -mb-px text-sm font-medium text-center"
+                                                                        id="fileTabs"
+                                                                        data-tabs-toggle="#fileTabsContent"
+                                                                        role="tablist"
+                                                                        data-tabs-active-classes="text-blue-600 border-blue-600"
+                                                                        data-tabs-inactive-classes="border-transparent hover:text-gray-600 hover:border-gray-300"
+                                                                    >
+                                                                        {% for file in request.user|get_files:row %}
+                                                                        <li class="me-2 flex items-center" role="presentation">
+                                                                            
+                                                                            <button
+                                                                                id="tab-{{ forloop.counter }}"
+                                                                                data-tabs-target="#content-{{ forloop.counter }}"
+                                                                                type="button"
+                                                                                role="tab"
+                                                                                aria-controls="content-{{ forloop.counter }}"
+                                                                                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                                                                                class="inline-flex items-center gap-2 p-4 border-b-2 rounded-t-lg
+                                                                                {% if forloop.first %}active{% else %}border-transparent{% endif %}
+                                                                                hover:text-gray-600 hover:border-gray-300">
+
+                                                                                <span class="truncate max-w-[120px]">
+                                                                                    {{ file.filename }}
+                                                                                </span>
+                                                                                <span
+                                                                                    onclick="closeTab(event, {{ file.id }})"
+                                                                                    class="text-gray-400 hover:text-red-500 cursor-pointer text-xs font-bold"
+                                                                                >
+                                                                                    ✕
+                                                                                </span>
+                                                                            </button>
+
+                                                                        </li>
+                                                                        {% endfor %}
+                                                                    </ul>
+                                                                </div>
+                    
+                                                                <div id="fileTabsContent">
+                                                                    {% for file in request.user|get_files:row %}
+                                                                        <div class="{% if not forloop.first %}hidden{% endif %} p-4 md:p-5 overflow-auto" id="content-{{ forloop.counter }}" role="tabpanel" aria-labelledby="tab-{{ forloop.counter }}">
+                                                                            {% if file.filename|file_extension in ".jpg, .png, .gif" %}
+                                                                                <img class="w-full h-auto" src="/media/{{ file.file }}" alt="img">
+                                                                            {% elif file.filename|file_extension in ".mp4, .webm, .ogg" %}
+                                                                                <video class="w-full" height="700" controls>
+                                                                                    <source src="/media/{{ file.file }}" type="video/mp4">
+                                                                                </video>
+                                                                            {% elif file.filename|file_extension in ".pdf, .txt" %}
+                                                                                <iframe src="/media/{{ file.file }}" width="100%" height="700px"></iframe>
+                                                                            {% elif file.filename|file_extension in ".csv" %}
+                                                                                <pre class="bg-dark text-white p-3">{{ file.csv_text }}</pre>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            {% endif %}
+                                        </div>
                                     </td>
+
                                     <td class="border border-gray-300 text-center">
                                         <button
                                             type="button"
@@ -177,6 +273,7 @@
                                         </button>
                                     </td>
                                 </tr>
+
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -379,21 +476,56 @@
 </script>
 
 <script>
-  function previewFile(input){
-    const file = input.files[0]
-    if(!file) return
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
 
-    const container = input.closest("div")
+    function uploadFile(input) {
+        const file = input.files[0];
+        if (!file) return;
 
-    let existing = container.querySelector("a")
-    if(existing) existing.remove()
+        const url = input.dataset.uploadUrl;
 
-    const span = document.createElement("span")
-    span.className = "text-xs text-gray-700 truncate max-w-[120px]"
-    span.innerText = file.name
+        const formData = new FormData();
+        formData.append('file', file);
 
-    container.appendChild(span)
-  }
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Upload success:', data);
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+        });
+    }
+</script>
+
+<script>
+    function closeTab(event, fileId) {
+        event.stopPropagation();
+
+        if (!confirm("Are you sure you want to delete this file?")) return;
+
+        fetch(`/delete-file/${fileId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            window.location.reload();
+        })
+        .catch(err => console.error(err));
+    }
 </script>
 
 {% endblock extra_js %}

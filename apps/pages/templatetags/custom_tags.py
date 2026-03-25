@@ -1,6 +1,6 @@
 from django import template
 from apps.users.models import UserRole
-from apps.common.models import Role, TabFields, Tab
+from apps.common.models import Role, TabFields, Tab, Asset
 
 register = template.Library()
 
@@ -42,3 +42,8 @@ def get_first_tab(sheet):
             name="Tab 1"
         )
         return tab.pk
+    
+
+@register.filter
+def get_files(user, row):
+    return Asset.objects.filter(user=user, row=row)

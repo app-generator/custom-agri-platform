@@ -23,9 +23,9 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Bikin user & group DI SINI (Stage 2)
-RUN groupadd -r appgroup \
- && useradd -r -g appgroup -d /home/appuser -m appuser
+# Bikin user & group DI SINI (Stage 2) dengan explicit UID 1000
+RUN groupadd -g 1000 appgroup \
+ && useradd -u 1000 -g appgroup -d /home/appuser -m appuser
 
 # Install OS dependencies wajib
 RUN apt-get update && \

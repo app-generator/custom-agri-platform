@@ -9,7 +9,7 @@ import os
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag, Invitation, FieldType, ParcelPolygon
+from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag, Invitation, FieldType, ParcelPolygon, SheetFile
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import JsonResponse
@@ -642,6 +642,8 @@ def search(request):
 
 
 ###
+from apps.common.forms import SheetForm
+
 @login_required(login_url='/users/signin/')
 def certification(request):
   sheets = Sheet.objects.all()
@@ -658,18 +660,39 @@ def certification(request):
     'title': 'Certification',
     'sheets': sheets
   }
-  return render(request, 'pages/farms/certification.html', context)
+  return render(request, 'pages/sheets/index.html', context)
+
+@login_required(login_url='/users/signin/')
+def create_sheet(request):
+  form = SheetForm()
+  if request.method == 'POST':
+    form = SheetForm(request.POST, request.FILES)
+    if form.is_valid():
+      form.save()
+
+      return redirect(request.META.get('HTTP_REFERER'))
+
+  context = {
+    'form': form
+  }
+  return render(request, 'pages/sheets/create.html', context)
 
 @login_required(login_url='/users/signin/')
 def edit_sheet(request, pk):
   sheet = get_object_or_404(Sheet, pk=pk)
+  form = SheetForm(instance=sheet)
   if request.method == 'POST':
-    name = request.POST.get('name')
-    sheet.name = name
-    sheet.save()
-    return redirect(request.META.get('HTTP_REFERER'))
+    form = SheetForm(request.POST, request.FILES, instance=sheet)
+    if form.is_valid():
+      form.save()
+
+      return redirect(request.META.get('HTTP_REFERER'))
   
-  return redirect(request.META.get('HTTP_REFERER'))
+  context = {
+    'form': form,
+    'sheet': sheet
+  }
+  return render(request, 'pages/sheets/edit.html', context)
 
 @login_required(login_url='/users/signin/')
 def delete_sheet(request, pk):
@@ -677,6 +700,81 @@ def delete_sheet(request, pk):
   sheet.delete()
   return redirect(request.META.get('HTTP_REFERER'))
 
+@login_required(login_url='/users/signin/')
+def download_sheet_file(request, pk):
+  sheet = get_object_or_404(Sheet, id=pk)
+  file_path = sheet.file.path
+
+  if not os.path.exists(file_path):
+    raise Http404("File not found")
+
+  response = FileResponse(open(file_path, "rb"), as_attachment=True)
+  response["Content-Disposition"] = f'attachment; filename="{sheet.filename}"'
+
+  return response
+
+
+def sheet_details(request, pk):
+  sheet = get_object_or_404(Sheet, pk=pk)
+  tabs = Tab.objects.filter(sheet=sheet)
+  form = SheetForm(instance=sheet)
+
+  if request.method == 'POST':
+    form = SheetForm(request.POST, request.FILES, instance=sheet)
+    if form.is_valid():
+      form.save()
+
+      return redirect(request.META.get('HTTP_REFERER'))
+
+  context = {
+    'sheet': sheet,
+    'tabs': tabs,
+    'form': form
+  }
+  return render(request, 'pages/sheets/sheet-info.html', context)
+
+def sheet_media(request, pk):
+  sheet = get_object_or_404(Sheet, pk=pk)
+  tabs = Tab.objects.filter(sheet=sheet)
+  files = SheetFile.objects.filter(sheet=sheet)
+
+  context = {
+    'sheet': sheet,
+    'tabs': tabs,
+    'files': files
+  }
+  return render(request, 'pages/sheets/sheet-media.html', context)
+
+def upload_sheet_file(request, pk):
+  sheet = get_object_or_404(Sheet, pk=pk)
+  if request.method == 'POST':
+    file = request.FILES.get('file')
+
+    SheetFile.objects.create(
+      file=file,
+      sheet=sheet
+    )
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
+  return redirect(request.META.get('HTTP_REFERER'))
+
+def download_sheet_file(request, pk):
+  sheet_file = get_object_or_404(SheetFile, pk=pk)
+  file_path = sheet_file.file.path
+
+  if not os.path.exists(file_path):
+    raise Http404("File not found")
+
+  response = FileResponse(open(file_path, "rb"), as_attachment=True)
+  response["Content-Disposition"] = f'attachment; filename="{sheet_file.filename}"'
+
+  return response
+
+def delete_sheet_file(request, pk):
+  sheet_file = get_object_or_404(SheetFile, pk=pk)
+  sheet_file.delete()
+  return redirect(request.META.get('HTTP_REFERER'))
 
 def tab_details(request, pk):
   tab = get_object_or_404(Tab, pk=pk)

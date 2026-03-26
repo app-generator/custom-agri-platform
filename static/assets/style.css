@@ -168,6 +168,22 @@
   @apply hover:bg-gray-50 cursor-pointer !important;
 }
 
+.ql-toolbar.ql-snow {
+  @apply rounded-t-lg border-gray-300;
+}
+
+.ql-container.ql-snow {
+  @apply rounded-b-lg border-gray-300;
+}
+
+.ql-toolbar.ql-snow+.ql-container.ql-snow {
+  @apply min-h-[400px];
+}
+
+.ql-editor {
+  @apply min-h-[400px] max-h-[600px] overflow-y-auto max-w-full;
+}
+
 /* feed styles */
 
 @media (min-width: 1280px) {

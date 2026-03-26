@@ -3,6 +3,7 @@ import os
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.users.models import UserRole
+from django_quill.fields import QuillField
 
 User = get_user_model()
 
@@ -104,9 +105,22 @@ class ParcelAction(BaseModel):
 
 class Sheet(BaseModel):
     name = models.CharField(max_length=255)
+    info = QuillField(null=True, blank=True)
 
     def __str__(self):
         return self.name
+
+
+class SheetFile(BaseModel):
+    sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='sheet')
+
+    def __str__(self):
+        return self.sheet.name
+
+    @property
+    def filename(self):
+        return os.path.basename(self.file.name)
     
 class Tab(BaseModel):
     sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)

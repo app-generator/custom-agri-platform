@@ -6,6 +6,16 @@
     <div class="m-4">
         <div class="bg-white border border-gray-200 rounded-b-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="flex border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900">
+                <div class="flex items-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
+                    <a href="{% url "sheet_details" sheet.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700">
+                        Info
+                    </a>
+                </div>
+                <div class="flex items-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
+                    <a href="{% url "sheet_media" sheet.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700">
+                        Media
+                    </a>
+                </div>
                 {% for tab in tabs %}
                     <div class="flex items-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
                         <a href="{% url "tab_details" tab.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 {% if tab.id == active_tab.id %}bg-white dark:bg-gray-800{% endif %}">

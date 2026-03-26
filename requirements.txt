@@ -42,3 +42,4 @@ gpxpy
 openpyxl
 xlrd
 pyshp
+django-quill-editor

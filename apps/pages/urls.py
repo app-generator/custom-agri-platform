@@ -59,15 +59,24 @@ urlpatterns = [
     path("send-request/<int:pk>/", views.send_request, name="send_request"),
 
     # Sheet
-    path("tab/<int:pk>/", views.tab_details, name="tab_details"),
+    path("sheet/tab/<int:pk>/", views.tab_details, name="tab_details"),
+    path("sheet/info/<int:pk>/", views.sheet_details, name="sheet_details"),
+    path("sheet/media/<int:pk>/", views.sheet_media, name="sheet_media"),
+
+    path("upload-sheet-file/<int:pk>/", views.upload_sheet_file, name="upload_sheet_file"),
+    path("download-sheet-file/<int:pk>/", views.download_sheet_file, name="download_sheet_file"),
+    path("delete-sheet-file/<int:pk>/", views.delete_sheet_file, name="delete_sheet_file"),
+
     path("xlsx-preview/", views.xlsx_preview_page, name="xlsx_preview_page"),
     path("save-xlsx/", views.save_xlsx_to_db, name="save_xlsx_to_db"),
     # path("upload_xlsx_preview/", views.upload_xlsx_preview, name="upload_xlsx_preview"),
     path("xlsx/update-session-sheet/", views.update_xlsx_session_sheet, name="update_xlsx_session_sheet"),
 
 
+    path("sheet/create/", views.create_sheet, name="create_sheet"),
     path("sheet/edit/<int:pk>/", views.edit_sheet, name="edit_sheet"),
     path("sheet/delete/<int:pk>/", views.delete_sheet, name="delete_sheet"),
+    path("sheet/download/<int:pk>/", views.download_sheet_file, name="download_sheet_file"),
 
     path("field/edit/<int:pk>/", views.edit_field, name="edit_field"),
     path("field/delete/<int:pk>/", views.delete_field, name="delete_field"),

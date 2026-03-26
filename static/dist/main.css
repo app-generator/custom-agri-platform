@@ -1068,9 +1068,6 @@ input:checked + .toggle-bg {
 .right-0 {
   right: 0px;
 }
-.right-1 {
-  right: 0.25rem;
-}
 .right-2 {
   right: 0.5rem;
 }
@@ -1082,9 +1079,6 @@ input:checked + .toggle-bg {
 }
 .top-0 {
   top: 0px;
-}
-.top-1 {
-  top: 0.25rem;
 }
 .top-2 {
   top: 0.5rem;
@@ -1512,6 +1506,9 @@ input:checked + .toggle-bg {
 .max-w-7xl {
   max-width: 80rem;
 }
+.max-w-\[120px\] {
+  max-width: 120px;
+}
 .max-w-full {
   max-width: 100%;
 }
@@ -1538,9 +1535,6 @@ input:checked + .toggle-bg {
 }
 .max-w-xs {
   max-width: 20rem;
-}
-.max-w-\[120px\] {
-  max-width: 120px;
 }
 .flex-1 {
   flex: 1 1 0%;
@@ -2996,6 +2990,31 @@ input:checked + .toggle-bg {
 .fc .fc-daygrid-day-frame:hover {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1)) !important;
+}
+
+.ql-toolbar.ql-snow {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  --tw-border-opacity: 1;
+  border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
+}
+
+.ql-container.ql-snow {
+  border-bottom-right-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  --tw-border-opacity: 1;
+  border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
+}
+
+.ql-toolbar.ql-snow+.ql-container.ql-snow {
+  min-height: 400px;
+}
+
+.ql-editor {
+  max-height: 600px;
+  min-height: 400px;
+  max-width: 100%;
+  overflow-y: auto;
 }
 
 /* feed styles */

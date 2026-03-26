@@ -81,7 +81,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 
     'django_extensions',
-
+    'django_quill',
 ]
 
 WEBPACK_LOADER = {

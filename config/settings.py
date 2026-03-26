@@ -304,7 +304,7 @@ MESSAGE_TAGS = {
     messages.ERROR: 'text-red-800 border border-red-300 bg-red-50 dark:text-red-400 dark:border-red-800',
 }
 
-SITE_ID = 1
+SITE_ID = 2
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_SECRET_KEY = os.getenv("GOOGLE_SECRET_KEY", "")

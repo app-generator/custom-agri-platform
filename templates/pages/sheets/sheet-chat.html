@@ -7,7 +7,7 @@
         <div class="bg-white border border-gray-200 rounded-b-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="flex border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900">
                 <div class="flex items-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
-                    <a href="#" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 bg-white dark:bg-gray-800">
+                    <a href="{% url "sheet_details" sheet.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700">
                         Info
                     </a>
                 </div>
@@ -17,7 +17,7 @@
                     </a>
                 </div>
                 <div class="flex items-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
-                    <a href="{% url "sheet_chat" sheet.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <a href="#" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 bg-white dark:bg-gray-800">
                         Chat
                     </a>
                 </div>
@@ -69,22 +69,66 @@
                 </a>
             </div>
 
+            <div class="p-3 flex flex-col h-[600px]">
+                <div id="chatBox" class="flex-1 overflow-y-auto space-y-4 pr-2">
 
-            <div class="p-3">
-                <form class="space-y-3" method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-
-                    {% for field in form %}
-                        <div>
-                            <label for="{{ field.name }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
+                    {% for chat in chats %}
+                        {% if chat.sender == request.user %}
+                            <div class="flex items-start gap-2.5 justify-end">
+                                <div class="flex flex-col max-w-[320px] p-3 bg-blue-500 text-white rounded-s-xl rounded-ee-xl">
+                                    <span class="text-sm font-semibold text-right">You</span>
+                                    <p class="text-sm mb-3">{{ chat.message }}</p>
+                                    <span class="text-xs text-blue-100 text-right">
+                                    {{ chat.created_at|date:"h:i A" }}
+                                    </span>
+                                </div>
+                                {% if request.user.avatar %}
+                                <img class="w-8 h-8 rounded-full" src="{{ request.user.avatar.url }}">
+                                {% else %}
+                                <img class="w-8 h-8 rounded-full" src="{% static "dist/img/default-user.png" %}">
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="flex items-start gap-2.5">
+                                {% if chat.sender.avatar %}
+                                <img class="w-8 h-8 rounded-full" src="{{ chat.sender.avatar.url }}">
+                                {% else %}
+                                <img class="w-8 h-8 rounded-full" src="{% static "dist/img/default-user.png" %}">
+                                {% endif %}
+                                <div class="flex flex-col max-w-[320px] p-3 bg-gray-100 rounded-e-xl rounded-es-xl">
+                                    <span class="text-sm font-semibold">{{ chat.sender.email }}</span>
+                                    <p class="text-sm mb-3">{{ chat.message }}</p>
+                                    <span class="text-xs text-gray-500">
+                                    {{ chat.created_at|date:"h:i A" }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <p class="text-gray-500 text-sm">No messages yet.</p>
                     {% endfor %}
+                </div>
 
-                    <button class="text-white bg-primary-700 hover:bg-primary-800 font-medium rounded-lg text-sm px-5 py-2.5">Save</button>
+                <form method="POST" class="mt-3 flex items-center gap-2">
+                    {% csrf_token %}
+                    <textarea 
+                        name="message"
+                        rows="1"
+                        placeholder="Type a message..."
+                        class="flex-1 resize-none bg-gray-50 border border-gray-300 text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                    ></textarea>
 
+                    <button 
+                        type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                    Send
+                    </button>
                 </form>
+
             </div>
+
         </div>
     </div>
 
@@ -120,3 +164,18 @@
     </div>
 
 {% endblock content %}
+
+{% block extra_js %}
+
+<script>
+  const textarea = document.querySelector('textarea[name="message"]');
+
+  textarea.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault(); // stop newline
+      this.form.submit(); // submit form
+    }
+  });
+</script>
+
+{% endblock extra_js %}

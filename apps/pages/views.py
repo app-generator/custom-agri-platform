@@ -9,7 +9,7 @@ import os
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, FarmMembership, Tag, Invitation, FieldType, ParcelPolygon, SheetFile
+from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, Tag, Invitation, FieldType, ParcelPolygon, SheetFile, SheetChat
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import JsonResponse
@@ -646,7 +646,7 @@ from apps.common.forms import SheetForm
 
 @login_required(login_url='/users/signin/')
 def certification(request):
-  sheets = Sheet.objects.all()
+  sheets = Sheet.objects.filter(farm=request.user.active_farm)
 
   if request.method == 'POST':
     name = request.POST.get('name')
@@ -668,7 +668,9 @@ def create_sheet(request):
   if request.method == 'POST':
     form = SheetForm(request.POST, request.FILES)
     if form.is_valid():
-      form.save()
+      sheet = form.save(commit=False)
+      sheet.farm = request.user.active_farm
+      sheet.save()
 
       return redirect(request.META.get('HTTP_REFERER'))
 
@@ -680,9 +682,9 @@ def create_sheet(request):
 @login_required(login_url='/users/signin/')
 def edit_sheet(request, pk):
   sheet = get_object_or_404(Sheet, pk=pk)
-  form = SheetForm(instance=sheet)
+  form = SheetForm(instance=sheet, user=request.user)
   if request.method == 'POST':
-    form = SheetForm(request.POST, request.FILES, instance=sheet)
+    form = SheetForm(request.POST, request.FILES, instance=sheet, user=request.user)
     if form.is_valid():
       form.save()
 
@@ -717,10 +719,10 @@ def download_sheet_file(request, pk):
 def sheet_details(request, pk):
   sheet = get_object_or_404(Sheet, pk=pk)
   tabs = Tab.objects.filter(sheet=sheet)
-  form = SheetForm(instance=sheet)
+  form = SheetForm(instance=sheet, user=request.user)
 
   if request.method == 'POST':
-    form = SheetForm(request.POST, request.FILES, instance=sheet)
+    form = SheetForm(request.POST, request.FILES, instance=sheet, user=request.user)
     if form.is_valid():
       form.save()
 
@@ -744,6 +746,31 @@ def sheet_media(request, pk):
     'files': files
   }
   return render(request, 'pages/sheets/sheet-media.html', context)
+
+def sheet_chat(request, pk):
+  sheet = get_object_or_404(Sheet, pk=pk)
+  tabs = Tab.objects.filter(sheet=sheet)
+  files = SheetFile.objects.filter(sheet=sheet)
+  chats = SheetChat.objects.filter(sheet=sheet).select_related('sender').order_by('created_at')
+
+  if request.method == 'POST':
+    message = request.POST.get('message')
+    if message:
+      SheetChat.objects.create(
+        sheet=sheet,
+        sender=request.user,
+        message=message
+      )
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
+  context = {
+    'sheet': sheet,
+    'tabs': tabs,
+    'files': files,
+    'chats': chats
+  }
+  return render(request, 'pages/sheets/sheet-chat.html', context)
 
 def upload_sheet_file(request, pk):
   sheet = get_object_or_404(Sheet, pk=pk)

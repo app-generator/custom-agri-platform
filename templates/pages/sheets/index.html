@@ -38,6 +38,12 @@
                             <th scope="col" class="px-6 py-3">
                                 Info
                             </th>
+                            <th scope="col" class="px-6 py-3">
+                                Year
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                State
+                            </th>
                             <th scope="col" class="px-6 py-3 text-end">
                                 Action
                             </th>
@@ -51,6 +57,12 @@
                             </th>
                             <td class="px-6 py-4">
                                 {{ sheet.info.html|safe }}
+                            </td>
+                            <td class="px-6 py-4">
+                                {{ sheet.year }}
+                            </td>
+                            <td class="px-6 py-4">
+                                {{ sheet.get_state_display }}
                             </td>
                             <td class="px-6 py-4 text-end">
                                 <a href="{% url "sheet_details" sheet.id %}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">

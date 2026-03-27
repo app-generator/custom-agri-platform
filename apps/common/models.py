@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from apps.users.models import UserRole
 from django_quill.fields import QuillField
+from datetime import datetime
 
 User = get_user_model()
 
@@ -102,9 +103,19 @@ class ParcelAction(BaseModel):
 
 
 #
+class StateChoices(models.TextChoices):
+    OPEN = 'OPEN', 'Open'
+    REVIEW_NEEDED = 'REVIEW_NEEDED', 'Review needed'
+    APPROVED = 'APPROVED', 'Approved'
+
+def current_year():
+  return str(datetime.now().year)
 
 class Sheet(BaseModel):
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=255)
+    year = models.CharField(max_length=5, default=current_year)
+    state = models.CharField(max_length=20, choices=StateChoices.choices, default=StateChoices.OPEN)
     info = QuillField(null=True, blank=True)
 
     def __str__(self):
@@ -121,7 +132,16 @@ class SheetFile(BaseModel):
     @property
     def filename(self):
         return os.path.basename(self.file.name)
-    
+
+
+class SheetChat(BaseModel):
+    sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+
+    def __str__(self):
+        return self.sheet.name
+
 class Tab(BaseModel):
     sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)

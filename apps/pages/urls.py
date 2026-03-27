@@ -62,6 +62,7 @@ urlpatterns = [
     path("sheet/tab/<int:pk>/", views.tab_details, name="tab_details"),
     path("sheet/info/<int:pk>/", views.sheet_details, name="sheet_details"),
     path("sheet/media/<int:pk>/", views.sheet_media, name="sheet_media"),
+    path("sheet/chat/<int:pk>/", views.sheet_chat, name="sheet_chat"),
 
     path("upload-sheet-file/<int:pk>/", views.upload_sheet_file, name="upload_sheet_file"),
     path("download-sheet-file/<int:pk>/", views.download_sheet_file, name="download_sheet_file"),

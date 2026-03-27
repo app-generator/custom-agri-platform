@@ -12,7 +12,7 @@ User = get_user_model()
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     fieldsets = (
-        (_('Personal Info'), {'fields': ('first_name', 'last_name', 'email', 'avatar')}),
+        (_('Personal Info'), {'fields': ('first_name', 'last_name', 'email', 'avatar', 'active_farm')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
         (_('Role'), {'fields': ('role',)}),

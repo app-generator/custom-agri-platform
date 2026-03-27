@@ -362,3 +362,5 @@ REST_FRAMEWORK = {
 
 
 GOOGLE_MAP_API_KEY = os.environ.get('GOOGLE_MAP_API_KEY')
+
+VERSION = open('VERSION', 'r').readline()

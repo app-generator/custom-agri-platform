@@ -1,43 +1,49 @@
 from django.contrib import admin
 
-from apps.common.models import Sheet, Tab, TabFields, TabRow, TabCell, Tag, Farm, Role, Invitation, CropType, Substance, ParcelPolygon
+from apps.common.models import Sheet, Tab, TabFields, TabRow, TabCell, Tag, Farm, Role, Invitation, CropType, Substance, ParcelPolygon, Parcel
 from django.apps import apps
 from django.contrib import admin
 
 # Register your models here.
 
-app_models = apps.get_app_config('common').get_models()
-for model in app_models:
-    try:    
+# app_models = apps.get_app_config('common').get_models()
+# for model in app_models:
+#     try:    
  
-        admin.site.register(model)
+#         admin.site.register(model)
 
-    except Exception:
-        pass
-
-
-# admin.site.register(Sheet)
-
-# class TabAdmin(admin.ModelAdmin):
-#     list_display = ('sheet', 'name', )
-
-# admin.site.register(Tab, TabAdmin)
-
-# class TabFieldsAdmin(admin.ModelAdmin):
-#     list_display = ('tab', 'name', )
-
-# admin.site.register(TabFields, TabFieldsAdmin)
+#     except Exception:
+#         pass
 
 
-# admin.site.register(Tag)
-# admin.site.register(Farm)
-# admin.site.register(Role)
-# admin.site.register(Invitation)
+admin.site.register(Sheet)
 
-# admin.site.register(TabRow)
-# admin.site.register(TabCell)
+class TabAdmin(admin.ModelAdmin):
+    list_display = ('sheet', 'name', )
 
-# admin.site.register(CropType)
-# admin.site.register(Substance)
+admin.site.register(Tab, TabAdmin)
 
-# admin.site.register(ParcelPolygon)
+class TabFieldsAdmin(admin.ModelAdmin):
+    list_display = ('tab', 'name', )
+
+admin.site.register(TabFields, TabFieldsAdmin)
+
+
+admin.site.register(Tag)
+admin.site.register(Farm)
+admin.site.register(Role)
+admin.site.register(Invitation)
+
+admin.site.register(TabRow)
+admin.site.register(TabCell)
+
+admin.site.register(CropType)
+admin.site.register(Substance)
+
+admin.site.register(Parcel)
+
+class ParcelPolygonAdmin(admin.ModelAdmin):
+    list = ('parcel', )
+    list_filter = ('parcel', )
+
+admin.site.register(ParcelPolygon, ParcelPolygonAdmin)

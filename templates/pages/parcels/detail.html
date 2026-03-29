@@ -15,7 +15,7 @@
 {% block content %}
 
     <div class="m-4">
-        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div class="p-4 bg-white border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm dark:bg-gray-700">
 
             <div class="mb-5">
                 <form action="{% url "import_parcel_polygon" parcel.id %}" method="post" id="gpxUploadForm" enctype="multipart/form-data">

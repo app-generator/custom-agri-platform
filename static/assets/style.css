@@ -184,6 +184,10 @@
   @apply min-h-[400px] max-h-[600px] overflow-y-auto max-w-full;
 }
 
+.dark .ql-editor {
+  @apply text-white;
+}
+
 /* feed styles */
 
 @media (min-width: 1280px) {

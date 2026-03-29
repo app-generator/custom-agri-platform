@@ -42,4 +42,5 @@ gpxpy
 openpyxl
 xlrd
 pyshp
+pyproj
 django-quill-editor

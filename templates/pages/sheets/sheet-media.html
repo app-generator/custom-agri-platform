@@ -7,23 +7,23 @@
         <div class="bg-white border border-gray-200 rounded-b-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div class="flex border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900">
                 <div class="flex items-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
-                    <a href="{% url "sheet_details" sheet.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <a href="{% url "sheet_details" sheet.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-300">
                         Info
                     </a>
                 </div>
                 <div class="flex items-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
-                    <a href="#" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 bg-white dark:bg-gray-800">
+                    <a href="#" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 dark:text-gray-300">
                         Media
                     </a>
                 </div>
                 <div class="flex items-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
-                    <a href="{% url "sheet_chat" sheet.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <a href="{% url "sheet_chat" sheet.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-300">
                         Chat
                     </a>
                 </div>
                 {% for tab in tabs %}
                     <div class="flex items-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
-                        <a href="{% url "tab_details" tab.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 {% if tab.id == active_tab.id %}bg-white dark:bg-gray-800{% endif %}">
+                        <a href="{% url "tab_details" tab.id %}" class="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-300 {% if tab.id == active_tab.id %}bg-white dark:bg-gray-800{% endif %}">
                             {{ tab.name }}
                             {% if tab.id != active_tab.id %}
                             <button 
@@ -64,7 +64,7 @@
                     </div>
                 {% endfor %}
 
-                <a href="#" data-modal-target="add-tab-modal" data-modal-toggle="add-tab-modal" class="px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700">
+                <a href="#" data-modal-target="add-tab-modal" data-modal-toggle="add-tab-modal" class="px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-200">
                     +  
                 </a>
             </div>

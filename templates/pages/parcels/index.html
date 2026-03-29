@@ -38,10 +38,10 @@
                                 {{ parcel.name|default_if_none:"" }}
                             </th>
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ parcel.info|default_if_none:"" }}
+                                {{ parcel.info|default_if_none:""|truncatechars:50 }}
                             </th>
                             <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ parcel.culture|default_if_none:"" }}
+                                {{ parcel.culture|default_if_none:""|truncatechars:50 }}
                             </td>
                             <td class="px-6 py-4">
                                 <a href="{% url "parcel_details" parcel.id %}" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">View</a>

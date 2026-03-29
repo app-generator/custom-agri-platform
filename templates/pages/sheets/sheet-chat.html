@@ -170,10 +170,14 @@
 <script>
   const textarea = document.querySelector('textarea[name="message"]');
 
+  window.addEventListener('load', () => {
+    textarea.focus();
+  });
+  
   textarea.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault(); // stop newline
-      this.form.submit(); // submit form
+      e.preventDefault();
+      this.form.submit();
     }
   });
 </script>

@@ -37,6 +37,17 @@ urlpatterns = [
 
     path("tab-row/upload/<int:pk>/", views.tab_row_upload, name="tab_row_upload"),
 
+    # tasks
+    path("farm/tasks/<int:farm_id>/", views.farm_tasks, name="farm_tasks"),
+    path("farm/tasks/<int:farm_id>/create/", views.create_farm_task, name="create_farm_task"),
+    path("farm/tasks/<int:task_id>/edit/", views.edit_farm_task, name="edit_farm_task"),
+
+    path("parcel/tasks/<int:parcel_id>/", views.parcels_tasks, name="parcels_tasks"),
+    path("parcel/tasks/<int:parcel_id>/create/", views.create_parcel_task, name="create_parcel_task"),
+    path("parcel/tasks/<int:parcel_id>/edit/", views.edit_parcel_task, name="edit_parcel_task"),
+
+    path("farm/tasks/<int:task_id>/delete/", views.delete_farm_task, name="delete_farm_task"),
+
     #
     path("personnel/", views.personnel, name="personnel"),
     path("tasks/", views.tasks, name="tasks"),

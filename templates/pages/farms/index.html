@@ -14,6 +14,7 @@
                 {% endif %}
             </div>
 
+            {% if farms %}
             <div class="relative overflow-x-auto">
                 <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -23,6 +24,9 @@
                             </th>
                             <th scope="col" class="px-6 py-3">
                                 Address
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Tasks
                             </th>
                             <th scope="col" class="px-6 py-3">
                                 Parcels
@@ -43,9 +47,12 @@
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 {{ farm.name }}
                             </th>
-                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            <td class="px-6 py-4">
                                 {{ farm.address }}
-                            </th>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="{% url "farm_tasks" farm.id %}" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">View</a>
+                            </td>
                             <td class="px-6 py-4">
                                 <a href="{% url "farm_details" farm.pk %}" class="py-2 px-4 text-xs font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">View</a>
                             </td>
@@ -157,6 +164,11 @@
                     </tbody>
                 </table>
             </div>
+            {% else %}
+            <div class="flex items-center justify-center w-full h-64 my-8">
+                <p class="text-gray-600">No farms</p>
+            </div>
+            {% endif %}
 
         </div>
     </div>

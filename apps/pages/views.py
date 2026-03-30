@@ -9,7 +9,12 @@ import os
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from apps.common.models import Farm, Parcel, CropPlan, CropType, Substance, ParcelAction, Tag, Invitation, FieldType, ParcelPolygon, SheetFile, SheetChat
+from apps.common.models import (
+  Farm, Parcel, CropPlan, CropType, 
+  Substance, ParcelAction, Tag, 
+  Invitation, FieldType, ParcelPolygon, 
+  SheetFile, SheetChat, Task
+)
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import JsonResponse
@@ -19,6 +24,7 @@ from apps.users.models import UserRole
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
+from pyproj import Transformer, CRS
 
 User = get_user_model()
 
@@ -153,6 +159,101 @@ def create_parcel(request, farm_id):
   }
   return render(request, "pages/parcels/create.html", context)
 
+# Farm tasks
+
+def farm_tasks(request, farm_id):
+  farm = get_object_or_404(Farm, pk=farm_id)
+  tasks = Task.objects.filter(farm=farm)
+
+  context = {
+    'farm': farm,
+    'tasks': tasks,
+    'segment': 'farms'
+  }
+  return render(request, 'pages/farms/tasks/index.html', context)
+
+def create_farm_task(request, farm_id):
+  farm = get_object_or_404(Farm, pk=farm_id)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    Task.objects.create(
+      farm=farm, name=name
+    )
+
+    return redirect(reverse('farm_tasks', args=[farm.pk]))
+
+  context = {
+    'farm': farm,
+    'segment': 'farms'
+  }
+  return render(request, 'pages/farms/tasks/create.html', context)
+
+def edit_farm_task(request, task_id):
+  task = get_object_or_404(Task, pk=task_id)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    task.name = name
+    task.save()
+
+    return redirect(reverse('farm_tasks', args=[task.farm.pk]))
+
+  context = {
+    'farm': task.farm,
+    'task': task,
+    'segment': 'farms'
+  }
+  return render(request, 'pages/farms/tasks/edit.html', context)
+
+def parcels_tasks(request, parcel_id):
+  parcel = get_object_or_404(Parcel, pk=parcel_id)
+  tasks = Task.objects.filter(parcel=parcel)
+
+  context = {
+    'parcel': parcel,
+    'tasks': tasks,
+    'segment': 'farms'
+  }
+  return render(request, 'pages/parcels/tasks/index.html', context)
+
+def create_parcel_task(request, parcel_id):
+  parcel = get_object_or_404(Parcel, pk=parcel_id)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    Task.objects.create(
+      parcel=parcel, name=name
+    )
+
+    return redirect(reverse('parcels_tasks', args=[parcel.pk]))
+
+  context = {
+    'parcel': parcel,
+    'farm': parcel.farm,
+    'segment': 'farms'
+  }
+  return render(request, 'pages/parcels/tasks/create.html', context)
+
+def edit_parcel_task(request, parcel_id):
+  task = get_object_or_404(Task, pk=parcel_id)
+  if request.method == 'POST':
+    name = request.POST.get('name')
+    task.name = name
+    task.save()
+
+    return redirect(reverse('parcels_tasks', args=[task.parcel.pk]))
+
+  context = {
+    'parcel': task.parcel,
+    'task': task,
+    'segment': 'farms'
+  }
+  return render(request, 'pages/parcels/tasks/edit.html', context)
+
+def delete_farm_task(request, task_id):
+  task = get_object_or_404(Task, pk=task_id)
+  task.delete()
+
+  return redirect(request.META.get('HTTP_REFERER'))
+
 def edit_parcel(request, pk):
   parcel = get_object_or_404(Parcel, pk=pk)
   if request.method == 'POST':
@@ -174,9 +275,6 @@ def delete_parcel(request, pk):
   parcel.delete()
 
   return redirect(request.META.get('HTTP_REFERER'))
-
-import time
-from pyproj import Transformer, CRS
 
 def simplify_coords(coords, max_points=500):
   if len(coords) <= max_points:
@@ -797,6 +895,7 @@ def sheet_chat(request, pk):
   sheet = get_object_or_404(Sheet, pk=pk)
   tabs = Tab.objects.filter(sheet=sheet)
   files = SheetFile.objects.filter(sheet=sheet)
+  SheetChat.objects.filter(sheet=sheet).exclude(sender=request.user).update(is_read=True)
   chats = SheetChat.objects.filter(sheet=sheet).select_related('sender').order_by('created_at')
 
   if request.method == 'POST':

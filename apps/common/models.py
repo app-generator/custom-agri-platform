@@ -50,6 +50,14 @@ class Parcel(BaseModel):
     culture = models.TextField(null=True, blank=True)
 
 
+class Task(BaseModel):
+    farm = models.ForeignKey(Farm, on_delete=models.SET_NULL, null=True, blank=True)
+    parcel = models.ForeignKey(Parcel, on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
 class ParcelPolygon(BaseModel):
     parcel = models.ForeignKey(Parcel, on_delete=models.CASCADE)
     polygon = models.JSONField()
@@ -138,6 +146,7 @@ class SheetChat(BaseModel):
     sheet = models.ForeignKey(Sheet, on_delete=models.CASCADE)
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return self.sheet.name
